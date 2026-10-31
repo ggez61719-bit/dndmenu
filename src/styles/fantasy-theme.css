@@ -1,0 +1,392 @@
+/* ==========================================================================
+   FANTASY D&D THEME  —  "Tool form Renji"
+   วางไฟล์นี้ที่ src/styles/fantasy-theme.css แล้ว import ใน CharacterBuilder.jsx
+   ธีมนี้ครอบคลุมแท็บย่อยและ Sidebar ด้วย (remap สี slate/amber ของ Tailwind
+   ภายใต้ .fantasy-theme) จึงไม่ต้องแก้ไฟล์แท็บทีละไฟล์
+   ทุกกฎอยู่ใน @media screen เพื่อไม่ให้กระทบหน้าพิมพ์ PDF
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;900&family=Cinzel+Decorative:wght@700;900&family=Noto+Serif+Thai:wght@500;600;700;800&family=Sarabun:wght@300;400;500;600;700;800&display=swap');
+
+@keyframes fantasy-embers-rise {
+  from { background-position: 0 0, 0 0, 0 0, 0 0, 0 0; }
+  to   { background-position: 0 -520px, 0 -640px, 0 -480px, 0 -700px, 0 -380px; }
+}
+
+@keyframes fantasy-pop {
+  from { transform: translateY(8px) scale(0.96); opacity: 0; }
+  to   { transform: none; opacity: 1; }
+}
+
+@keyframes fantasy-glow {
+  0%, 100% { box-shadow: 0 0 14px rgba(224, 150, 40, 0.30); }
+  50%      { box-shadow: 0 0 26px rgba(224, 150, 40, 0.55); }
+}
+
+@media screen {
+
+  /* ---------- Design tokens ---------- */
+  .fantasy-theme {
+    --gold-100: #fbeab8;
+    --gold-300: #f0c75e;
+    --gold-500: #d4a232;
+    --gold-700: #8a6a2f;
+    --parchment: #eadcc0;
+    --leather-950: #120b07;
+    --leather-900: #1d130c;
+    --leather-800: #33231a;
+    --leather-700: #4a3524;
+    --leather-600: #634730;
+
+    position: relative;
+    isolation: isolate;
+    font-family: 'Sarabun', system-ui, sans-serif;
+    scrollbar-color: #8a6a2f #120b07;
+  }
+
+  /* ---------- Dungeon background (stone + torch light) ---------- */
+  .fantasy-theme.fantasy-bg {
+    background-color: #0f0a06;
+    background-image:
+      radial-gradient(ellipse at 50% -10%, rgba(214, 150, 50, 0.20), transparent 55%),
+      radial-gradient(ellipse at 0% 100%, rgba(130, 30, 20, 0.20), transparent 50%),
+      radial-gradient(ellipse at 100% 100%, rgba(60, 40, 120, 0.20), transparent 50%),
+      repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.018) 0 2px, transparent 2px 46px),
+      repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.20) 0 1px, transparent 1px 92px);
+    background-attachment: fixed;
+  }
+
+  /* Floating embers + screen vignette */
+  .fantasy-embers {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0.6;
+    background-image:
+      radial-gradient(2px 2px at 20% 30%, #ffb347, transparent),
+      radial-gradient(1.5px 1.5px at 70% 60%, #ff8c42, transparent),
+      radial-gradient(2px 2px at 40% 80%, #ffd27a, transparent),
+      radial-gradient(1.5px 1.5px at 85% 20%, #ff9d4d, transparent),
+      radial-gradient(1px 1px at 10% 70%, #ffd27a, transparent);
+    background-size: 520px 520px, 640px 640px, 480px 480px, 700px 700px, 380px 380px;
+    animation: fantasy-embers-rise 30s linear infinite;
+  }
+  .fantasy-embers::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.6));
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .fantasy-embers { animation: none; }
+    .fantasy-theme .fantasy-dice-card { animation: none; }
+  }
+
+  .fantasy-theme ::selection { background: rgba(212, 162, 50, 0.35); color: #fff6dc; }
+
+  /* ---------- Slate -> dark leather / parchment remap ---------- */
+  .fantasy-theme .bg-slate-950 { background-color: var(--leather-950); }
+  .fantasy-theme .bg-slate-900 {
+    background-color: var(--leather-900);
+    background-image: linear-gradient(180deg, rgba(255, 214, 140, 0.045), rgba(0, 0, 0, 0.18));
+  }
+  .fantasy-theme .bg-slate-800 { background-color: var(--leather-800); }
+  .fantasy-theme .bg-slate-700 { background-color: var(--leather-700); }
+  .fantasy-theme .bg-slate-600 { background-color: var(--leather-600); }
+
+  /* opacity variants (exact token match, so hover:* variants are not affected) */
+  .fantasy-theme [class~="bg-slate-950/30"] { background-color: rgb(18 11 7 / 0.30); }
+  .fantasy-theme [class~="bg-slate-950/40"] { background-color: rgb(18 11 7 / 0.40); }
+  .fantasy-theme [class~="bg-slate-950/50"] { background-color: rgb(18 11 7 / 0.50); }
+  .fantasy-theme [class~="bg-slate-950/60"] { background-color: rgb(18 11 7 / 0.60); }
+  .fantasy-theme [class~="bg-slate-950/70"] { background-color: rgb(18 11 7 / 0.70); }
+  .fantasy-theme [class~="bg-slate-950/80"] { background-color: rgb(18 11 7 / 0.80); }
+  .fantasy-theme [class~="bg-slate-950/90"] { background-color: rgb(18 11 7 / 0.90); }
+  .fantasy-theme [class~="bg-slate-950/95"] { background-color: rgb(18 11 7 / 0.95); }
+  .fantasy-theme [class~="bg-slate-900/30"] { background-color: rgb(29 19 12 / 0.30); }
+  .fantasy-theme [class~="bg-slate-900/40"] { background-color: rgb(29 19 12 / 0.40); }
+  .fantasy-theme [class~="bg-slate-900/50"] { background-color: rgb(29 19 12 / 0.50); }
+  .fantasy-theme [class~="bg-slate-900/60"] { background-color: rgb(29 19 12 / 0.60); }
+  .fantasy-theme [class~="bg-slate-900/70"] { background-color: rgb(29 19 12 / 0.70); }
+  .fantasy-theme [class~="bg-slate-900/80"] { background-color: rgb(29 19 12 / 0.80); }
+  .fantasy-theme [class~="bg-slate-900/90"] { background-color: rgb(29 19 12 / 0.90); }
+  .fantasy-theme [class~="bg-slate-900/95"] { background-color: rgb(29 19 12 / 0.95); }
+  .fantasy-theme [class~="bg-slate-800/30"] { background-color: rgb(51 35 26 / 0.30); }
+  .fantasy-theme [class~="bg-slate-800/40"] { background-color: rgb(51 35 26 / 0.40); }
+  .fantasy-theme [class~="bg-slate-800/50"] { background-color: rgb(51 35 26 / 0.50); }
+  .fantasy-theme [class~="bg-slate-800/60"] { background-color: rgb(51 35 26 / 0.60); }
+  .fantasy-theme [class~="bg-slate-800/70"] { background-color: rgb(51 35 26 / 0.70); }
+  .fantasy-theme [class~="bg-slate-800/80"] { background-color: rgb(51 35 26 / 0.80); }
+  .fantasy-theme [class~="bg-slate-800/90"] { background-color: rgb(51 35 26 / 0.90); }
+
+  /* hover states */
+  .fantasy-theme .hover\:bg-slate-800:hover { background-color: var(--leather-800); }
+  .fantasy-theme .hover\:bg-slate-700:hover { background-color: var(--leather-700); }
+  .fantasy-theme .hover\:bg-slate-600:hover { background-color: var(--leather-600); }
+  .fantasy-theme .hover\:bg-slate-800\/50:hover { background-color: rgb(74 53 36 / 0.55); }
+  .fantasy-theme .hover\:text-slate-200:hover { color: var(--parchment); }
+  .fantasy-theme .hover\:text-amber-300:hover { color: #f6dc8e; }
+
+  /* borders */
+  .fantasy-theme .border-slate-900 { border-color: #3a2817; }
+  .fantasy-theme .border-slate-800 { border-color: #5a4127; }
+  .fantasy-theme .border-slate-700 { border-color: #6d4f2d; }
+  .fantasy-theme .border-slate-600 { border-color: #8a6a3a; }
+  .fantasy-theme [class~="border-slate-800/50"] { border-color: rgb(90 65 39 / 0.5); }
+  .fantasy-theme [class~="border-slate-700/50"] { border-color: rgb(109 79 45 / 0.5); }
+
+  /* text */
+  .fantasy-theme .text-slate-100 { color: #f4e9d0; }
+  .fantasy-theme .text-slate-200 { color: var(--parchment); }
+  .fantasy-theme .text-slate-300 { color: #d6c4a0; }
+  .fantasy-theme .text-slate-400 { color: #ad9a7c; }
+  .fantasy-theme .text-slate-500 { color: #8c7a60; }
+  .fantasy-theme .text-slate-600 { color: #6e5e48; }
+  .fantasy-theme .text-white     { color: #fff3d6; }
+  .fantasy-theme .text-slate-900,
+  .fantasy-theme .text-slate-950 { color: #24160a; }
+
+  /* gold (amber) */
+  .fantasy-theme .text-amber-300 { color: #f6dc8e; }
+  .fantasy-theme .text-amber-400 { color: #efc65c; }
+  .fantasy-theme .text-amber-500 { color: #d9a43a; }
+  .fantasy-theme .border-amber-500 { border-color: #c8962b; }
+  .fantasy-theme .bg-amber-500 {
+    background-color: #c8962b;
+    background-image: linear-gradient(180deg, #f3d27a, #c8962b 55%, #a3731a);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 2px 6px rgba(0, 0, 0, 0.5);
+  }
+  .fantasy-theme .hover\:bg-amber-400:hover {
+    background-color: #e0b445;
+    background-image: linear-gradient(180deg, #fbe39a, #dcab3c 55%, #b5821f);
+  }
+
+  /* semantic button colours -> forest / arcane / royal / blood */
+  .fantasy-theme .bg-emerald-600,
+  .fantasy-theme .bg-emerald-700 {
+    background-color: #2a5638;
+    background-image: linear-gradient(180deg, #3f7a50, #2a5638);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 2px 6px rgba(0, 0, 0, 0.5);
+  }
+  .fantasy-theme .hover\:bg-emerald-500:hover {
+    background-color: #3f7a50;
+    background-image: linear-gradient(180deg, #54966a, #3a6e49);
+  }
+  .fantasy-theme .bg-sky-600,
+  .fantasy-theme .bg-sky-700 {
+    background-color: #28407a;
+    background-image: linear-gradient(180deg, #3d5fa8, #28407a);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 2px 6px rgba(0, 0, 0, 0.5);
+  }
+  .fantasy-theme .hover\:bg-sky-500:hover {
+    background-color: #3d5fa8;
+    background-image: linear-gradient(180deg, #5479c4, #3a5a9e);
+  }
+  .fantasy-theme .bg-indigo-600,
+  .fantasy-theme .bg-indigo-700 {
+    background-color: #47297f;
+    background-image: linear-gradient(180deg, #6a46b0, #47297f);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 2px 6px rgba(0, 0, 0, 0.5);
+  }
+  .fantasy-theme .hover\:bg-indigo-500:hover {
+    background-color: #6a46b0;
+    background-image: linear-gradient(180deg, #8461c9, #5f3ca3);
+  }
+  .fantasy-theme .bg-rose-600,
+  .fantasy-theme .bg-rose-700 {
+    background-color: #7d2418;
+    background-image: linear-gradient(180deg, #b03a28, #7d2418);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 2px 6px rgba(0, 0, 0, 0.5);
+  }
+  .fantasy-theme .hover\:bg-rose-500:hover {
+    background-color: #b03a28;
+    background-image: linear-gradient(180deg, #c9503b, #a43322);
+  }
+
+  /* carved / angular corners */
+  .fantasy-theme .rounded-2xl { border-radius: 10px; }
+  .fantasy-theme .rounded-xl  { border-radius: 7px; }
+  .fantasy-theme .rounded-lg  { border-radius: 5px; }
+
+  .fantasy-theme .shadow-xl,
+  .fantasy-theme .shadow-2xl { box-shadow: 0 14px 34px rgba(0, 0, 0, 0.65); }
+
+  /* ---------- Typography ---------- */
+  .fantasy-theme h1,
+  .fantasy-theme h2,
+  .fantasy-theme h3,
+  .fantasy-theme h4,
+  .fantasy-theme h5 {
+    font-family: 'Cinzel', 'Noto Serif Thai', serif;
+    letter-spacing: 0.02em;
+  }
+  .fantasy-theme .uppercase {
+    font-family: 'Cinzel', 'Noto Serif Thai', serif;
+  }
+
+  .fantasy-theme .fantasy-title {
+    font-family: 'Cinzel Decorative', 'Noto Serif Thai', serif;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+    background: linear-gradient(180deg, #fff0b8 0%, #f0c75e 40%, #b9831f 75%, #f0c75e 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.6)) drop-shadow(0 0 14px rgba(224, 150, 40, 0.35));
+  }
+
+  .fantasy-theme .fantasy-subtitle {
+    font-family: 'Cinzel', 'Noto Serif Thai', serif;
+    letter-spacing: 0.06em;
+    color: #ad9a7c;
+  }
+
+  /* Diamond crest around the header icon */
+  .fantasy-theme .fantasy-crest {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 3rem;
+    height: 3rem;
+    transform: rotate(45deg);
+    border: 2px solid var(--gold-500);
+    background: radial-gradient(circle at 30% 30%, #3a2616, #150d07);
+    box-shadow:
+      inset 0 0 0 2px #150d07,
+      inset 0 0 0 3px rgba(212, 162, 50, 0.5),
+      0 0 18px rgba(224, 150, 40, 0.35);
+    animation: fantasy-glow 4s ease-in-out infinite;
+  }
+  .fantasy-theme .fantasy-crest > svg {
+    transform: rotate(-45deg);
+    color: #f0c75e;
+  }
+
+  /* Ornamental divider */
+  .fantasy-theme .fantasy-divider {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    color: var(--gold-500);
+  }
+  .fantasy-theme .fantasy-divider::before,
+  .fantasy-theme .fantasy-divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #8a6a2f 30%, #d4a232 50%, #8a6a2f 70%, transparent);
+  }
+
+  /* ---------- Framed panels (double gold border + corner brackets) ---------- */
+  .fantasy-theme .fantasy-panel {
+    position: relative;
+    border: 1px solid #7a5a2c;
+    background-image:
+      linear-gradient(180deg, rgba(255, 214, 140, 0.05), rgba(0, 0, 0, 0.22)),
+      radial-gradient(ellipse at top, rgba(214, 150, 50, 0.08), transparent 60%);
+    box-shadow:
+      inset 0 0 0 3px #17100a,
+      inset 0 0 0 4px rgba(212, 162, 50, 0.38),
+      0 14px 34px rgba(0, 0, 0, 0.65);
+  }
+  .fantasy-theme .fantasy-panel::before {
+    content: "";
+    position: absolute;
+    inset: 6px;
+    pointer-events: none;
+    background:
+      linear-gradient(#d4a232, #d4a232) top left / 22px 2px no-repeat,
+      linear-gradient(#d4a232, #d4a232) top left / 2px 22px no-repeat,
+      linear-gradient(#d4a232, #d4a232) top right / 22px 2px no-repeat,
+      linear-gradient(#d4a232, #d4a232) top right / 2px 22px no-repeat,
+      linear-gradient(#d4a232, #d4a232) bottom left / 22px 2px no-repeat,
+      linear-gradient(#d4a232, #d4a232) bottom left / 2px 22px no-repeat,
+      linear-gradient(#d4a232, #d4a232) bottom right / 22px 2px no-repeat,
+      linear-gradient(#d4a232, #d4a232) bottom right / 2px 22px no-repeat;
+    opacity: 0.85;
+  }
+
+  /* ---------- Tab bar ---------- */
+  .fantasy-theme .fantasy-tabbar {
+    border: 1px solid #7a5a2c;
+    background-image: linear-gradient(180deg, #2a1c11, #1a110a);
+    box-shadow: inset 0 1px 0 rgba(255, 214, 140, 0.12), 0 6px 18px rgba(0, 0, 0, 0.55);
+  }
+  .fantasy-theme .fantasy-tab {
+    font-family: 'Cinzel', 'Noto Serif Thai', serif;
+    letter-spacing: 0.02em;
+  }
+  .fantasy-theme .fantasy-tab.bg-amber-500 {
+    text-shadow: 0 1px 0 rgba(255, 235, 170, 0.5);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 0 14px rgba(240, 180, 60, 0.45);
+  }
+
+  /* ---------- Inputs ---------- */
+  .fantasy-theme input,
+  .fantasy-theme textarea,
+  .fantasy-theme select { font-family: inherit; }
+
+  .fantasy-theme input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+  .fantasy-theme textarea {
+    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.55);
+  }
+  .fantasy-theme input:focus,
+  .fantasy-theme textarea:focus,
+  .fantasy-theme select:focus {
+    outline: none;
+    border-color: var(--gold-500);
+    box-shadow: 0 0 0 2px rgba(212, 162, 50, 0.25), 0 0 14px rgba(212, 162, 50, 0.2);
+  }
+  .fantasy-theme input::placeholder,
+  .fantasy-theme textarea::placeholder { color: #8c7a60; }
+  .fantasy-theme option { background: #1d130c; color: #eadcc0; }
+  .fantasy-theme input[type="checkbox"],
+  .fantasy-theme input[type="radio"],
+  .fantasy-theme input[type="range"] { accent-color: #d4a232; }
+
+  /* ---------- Parchment toast ---------- */
+  .fantasy-theme .fantasy-toast {
+    background-image: linear-gradient(180deg, #e9d9b0, #cdb487);
+    background-color: #d9c698;
+    color: #2b1b0b;
+    border: 1px solid #8a6a2f;
+    box-shadow:
+      0 8px 22px rgba(0, 0, 0, 0.6),
+      inset 0 0 0 2px rgba(255, 255, 255, 0.25),
+      inset 0 0 18px rgba(120, 80, 20, 0.35);
+  }
+  .fantasy-theme .fantasy-toast button { color: #6b2f10; font-weight: 700; }
+
+  /* ---------- Dice toast ---------- */
+  .fantasy-theme .fantasy-dice-card {
+    border-color: #c8962b;
+    background-color: #17100a;
+    background-image: radial-gradient(ellipse at top left, rgba(214, 150, 50, 0.18), transparent 60%);
+    box-shadow:
+      0 10px 30px rgba(0, 0, 0, 0.7),
+      0 0 20px rgba(214, 150, 50, 0.25),
+      inset 0 0 0 2px #17100a,
+      inset 0 0 0 3px rgba(212, 162, 50, 0.4);
+    animation: fantasy-pop 0.25s ease-out;
+  }
+  .fantasy-theme .fantasy-dice-card .text-2xl {
+    font-family: 'Cinzel', serif;
+    text-shadow: 0 0 12px currentColor;
+  }
+
+  /* modal backdrop */
+  .fantasy-theme .bg-black\/75 { backdrop-filter: blur(3px); }
+
+  /* ---------- Scrollbars ---------- */
+  .fantasy-theme *::-webkit-scrollbar { width: 9px; height: 9px; }
+  .fantasy-theme *::-webkit-scrollbar-track { background: #120b07; }
+  .fantasy-theme *::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #a77c2f, #6b4f1f);
+    border-radius: 6px;
+    border: 1px solid #120b07;
+  }
+}
