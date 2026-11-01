@@ -1,4 +1,4 @@
-// src/components/CharacterBuilder.jsx
+// src/components/CharacterBuilder.jsx สาธุ
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   Shield, Swords, Book, User, Activity, Sparkles, Check, AlertCircle, 
@@ -1095,7 +1095,7 @@ export default function CharacterBuilder() {
         <div>
           <h1 className="text-3xl md:text-4xl font-bold text-amber-500 flex items-center gap-3">
             <Sparkles className="w-8 h-8" />
-            สร้างตัวละคร D&D / For Campaign Renji
+            สร้างตัวละคร D&D / Tool form Renji
           </h1>
           <p className="text-slate-400 text-sm mt-1">Digital Character Sheet, Multiclass & Combat Tracker (Lv.1 - Lv.20 Full Edition)</p>
         </div>
