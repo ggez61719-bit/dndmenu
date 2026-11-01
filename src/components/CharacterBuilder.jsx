@@ -1,6 +1,4 @@
 // src/components/CharacterBuilder.jsx
-import '../index.css';
-import '../styles/grimoire.css';
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   Shield, Swords, Book, User, Activity, Sparkles, Check, AlertCircle, 
@@ -1078,9 +1076,9 @@ export default function CharacterBuilder() {
   const carryMultiplier = (selectedRace.id === 'human' ? 18.75 : 15) * (hasWildheartAspect('aspect_bear') ? 2 : 1);
   const maxCarryWeight = Math.round(getFinalScore('STR') * carryMultiplier);
 
- return (
-    <div className="grim-root min-h-screen text-grim-text p-3 sm:p-4 md:p-8 pb-28 print:bg-white print:text-black print:p-0">
-
+  return (
+    <div className="min-h-screen bg-slate-950 text-slate-200 p-4 md:p-8 pb-28 font-sans selection:bg-amber-500/30 print:bg-white print:text-black print:p-0">
+      
       {/* Print Styles */}
       <style dangerouslySetInnerHTML={{__html: `
         @media print {
@@ -1093,94 +1091,105 @@ export default function CharacterBuilder() {
       `}} />
 
       {/* Header */}
-      <header className="max-w-6xl mx-auto mb-6 print-hidden">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h1 className="grim-title text-2xl sm:text-3xl md:text-4xl font-bold flex items-center gap-3">
-              <Sparkles className="w-7 h-7 md:w-8 md:h-8 text-grim-gold shrink-0" />
-              สร้างตัวละคร D&D / Tool form Renji
-            </h1>
-            <p className="text-grim-muted text-sm mt-1 italic">Digital Character Sheet, Multiclass & Combat Tracker (Lv.1 - Lv.20 Full Edition)</p>
-          </div>
-          <div className="flex flex-wrap items-center gap-2.5">
-            <button onClick={handleSaveToLocal} className="grim-btn grim-btn--primary">
-              <Save className="w-4 h-4" /> บันทึกตัวละคร
-            </button>
-            <button onClick={handleSaveToCloud} className="grim-btn">
-              <Sparkles className="w-4 h-4 text-grim-gold" /> บันทึกขึ้น Cloud
-            </button>
-            <button onClick={() => setShowCharModal(true)} className="grim-btn">
-              <FolderOpen className="w-4 h-4 text-grim-gold" /> ตัวละครของฉัน ({savedCharacters.length + cloudCharacters.length})
-            </button>
-            <button onClick={handleExportJSON} className="grim-btn">
-              <Download className="w-4 h-4 text-grim-gold" /> Export JSON
-            </button>
-            <button onClick={() => window.print()} className="grim-btn">
-              <Printer className="w-4 h-4 text-grim-gold" /> พิมพ์ PDF
-            </button>
-          </div>
+      <header className="max-w-6xl mx-auto mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4 print-hidden">
+        <div>
+          <h1 className="text-3xl md:text-4xl font-bold text-amber-500 flex items-center gap-3">
+            <Sparkles className="w-8 h-8" />
+            สร้างตัวละคร D&D / For Campaign Renji
+          </h1>
+          <p className="text-slate-400 text-sm mt-1">Digital Character Sheet, Multiclass & Combat Tracker (Lv.1 - Lv.20 Full Edition)</p>
         </div>
-        <div className="grim-divider" />
+        <div className="flex flex-wrap items-center gap-2.5">
+          <button
+            onClick={handleSaveToLocal}
+            className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2.5 rounded-xl font-bold shadow-lg transition-all text-sm"
+          >
+            <Save className="w-4 h-4" /> บันทึกตัวละคร
+          </button>
+          <button
+            onClick={handleSaveToCloud}
+            className="flex items-center gap-2 bg-sky-600 hover:bg-sky-500 text-white px-4 py-2.5 rounded-xl font-bold shadow-lg transition-all text-sm"
+          >
+            <Sparkles className="w-4 h-4" /> บันทึกขึ้น Cloud
+          </button>
+          <button
+            onClick={() => setShowCharModal(true)}
+            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2.5 rounded-xl font-bold shadow-lg transition-all text-sm"
+          >
+            <FolderOpen className="w-4 h-4" /> ตัวละครของฉัน ({savedCharacters.length + cloudCharacters.length})
+          </button>
+          <button
+            onClick={handleExportJSON}
+            className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3.5 py-2.5 rounded-xl font-semibold transition-all text-sm"
+          >
+            <Download className="w-4 h-4 text-amber-400" /> Export JSON
+          </button>
+          <button
+            onClick={() => window.print()}
+            className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3.5 py-2.5 rounded-xl font-semibold transition-all text-sm"
+          >
+            <Printer className="w-4 h-4 text-sky-400" /> พิมพ์ PDF
+          </button>
+        </div>
       </header>
 
       {/* Status Toast */}
       {statusMsg && (
-        <div className="grim-toast max-w-6xl mx-auto mb-4 px-4 py-3 flex items-center justify-between gap-3 text-sm font-medium print-hidden">
+        <div className="max-w-6xl mx-auto mb-4 bg-emerald-950/90 border border-emerald-500/50 text-emerald-200 px-4 py-3 rounded-xl flex items-center justify-between text-sm font-medium shadow-lg print-hidden">
           <span>{statusMsg}</span>
-          <button onClick={() => setStatusMsg(null)} className="text-xs underline shrink-0 text-grim-gold hover:text-grim-parchment">ปิด</button>
+          <button onClick={() => setStatusMsg(null)} className="text-xs underline ml-4">ปิด</button>
         </div>
       )}
 
       <main className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6">
-
+        
         {/* LEFT COLUMN: BUILDER & TABS */}
-        <div className="lg:col-span-8 space-y-6 print-hidden min-w-0">
-
+        <div className="lg:col-span-8 space-y-6 print-hidden">
+          
           {/* Character Identity & Level Bar */}
-          <div className="grim-panel grim-ornate p-4 flex flex-col md:flex-row items-center gap-4">
-            <label className="grim-portrait group">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col md:flex-row items-center gap-4 shadow-xl">
+            <label className="relative w-20 h-20 rounded-2xl bg-slate-800 border-2 border-dashed border-amber-500/50 flex flex-col items-center justify-center cursor-pointer overflow-hidden hover:border-amber-400 transition-all shrink-0 group">
               {portraitUrl ? (
                 <img src={portraitUrl} alt="Portrait" className="w-full h-full object-cover" />
               ) : (
                 <>
-                  <Camera className="w-6 h-6 text-grim-gold group-hover:scale-110 transition-transform" />
-                  <span className="text-[10px] text-grim-muted mt-1">อัปโหลดรูป</span>
+                  <Camera className="w-6 h-6 text-amber-500/70 group-hover:scale-110 transition-transform" />
+                  <span className="text-[10px] text-slate-400 mt-1">อัปโหลดรูป</span>
                 </>
               )}
               <input type="file" accept="image/*" onChange={handlePortraitUpload} className="hidden" />
             </label>
 
-            <div className="flex-1 w-full space-y-2 min-w-0">
+            <div className="flex-1 w-full space-y-2">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <label className="grim-label">ชื่อตัวละคร (Character Name)</label>
-                <span className="text-xs text-grim-muted font-medium">{classSummaryText}</span>
+                <label className="text-xs font-bold text-amber-400 uppercase tracking-wider">ชื่อตัวละคร (Character Name)</label>
+                <span className="text-xs text-slate-400 font-medium">{classSummaryText}</span>
               </div>
               <input
                 type="text"
                 value={characterName}
                 onChange={(e) => setCharacterName(e.target.value)}
                 placeholder="ตั้งชื่อผู้ผจญภัยของคุณ..."
-                className="grim-input text-lg font-bold"
+                className="w-full bg-slate-950 border border-slate-700 focus:border-amber-500 rounded-xl px-4 py-2.5 text-lg font-bold text-white outline-none transition-all"
               />
             </div>
 
             {/* Level Selector (Lv. 1 - 20 + Multiclass Total) */}
-            <div className="grim-inset w-full md:w-auto p-3 flex flex-col items-center shrink-0">
-              <div className="grim-label flex items-center gap-1 mb-1.5 text-[11px]">
+            <div className="w-full md:w-auto bg-slate-950/90 border border-amber-500/30 rounded-xl p-3 flex flex-col items-center shrink-0">
+              <div className="text-[11px] font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1 mb-1.5">
                 <ChevronUp className="w-3.5 h-3.5" /> เลเวลรวม: Lv.{totalLevel} / 20 {multiclasses.length > 0 && `(Multiclass)`}
               </div>
               <div className="flex items-center gap-1.5">
                 <button
                   onClick={() => setLevel(l => Math.max(1, l - 1))}
-                  className="grim-btn-sq"
-                  aria-label="ลดเลเวล"
+                  className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-bold text-sm"
                 >
                   -
                 </button>
                 <select
                   value={level}
                   onChange={(e) => setLevel(Math.min(20 - secondaryTotalLevels, parseInt(e.target.value, 10)))}
-                  className="grim-select text-sm"
+                  className="bg-amber-500 text-slate-950 font-black text-sm px-3 py-1.5 rounded-lg outline-none cursor-pointer shadow-md"
                 >
                   {Array.from({ length: Math.max(1, 20 - secondaryTotalLevels) }, (_, i) => i + 1).map(lv => (
                     <option key={lv} value={lv}>{selectedClass.name_th} Lv.{lv}</option>
@@ -1188,13 +1197,12 @@ export default function CharacterBuilder() {
                 </select>
                 <button
                   onClick={() => setLevel(l => Math.min(20 - secondaryTotalLevels, l + 1))}
-                  className="grim-btn-sq"
-                  aria-label="เพิ่มเลเวล"
+                  className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-bold text-sm"
                 >
                   +
                 </button>
               </div>
-              <div className="flex items-center gap-1.5 mt-2 flex-wrap justify-center">
+              <div className="flex items-center gap-1.5 mt-1.5 flex-wrap justify-center">
                 {[1, 5, 11, 17, 20].map(presetLv => (
                   <button
                     key={presetLv}
@@ -1202,18 +1210,18 @@ export default function CharacterBuilder() {
                       setMulticlasses([]);
                       setLevel(presetLv);
                     }}
-                    className={`grim-chip ${totalLevel === presetLv && multiclasses.length === 0 ? 'is-active' : ''}`}
+                    className={`text-[10px] px-1.5 py-0.5 rounded font-bold transition-all ${totalLevel === presetLv && multiclasses.length === 0 ? 'bg-amber-500/30 text-amber-300 border border-amber-500/50' : 'bg-slate-800 text-slate-400 hover:text-white'}`}
                   >
                     Lv.{presetLv}
                   </button>
                 ))}
-                <span className="text-[10px] text-grim-muted ml-1">Prof: <strong className="text-grim-parchment">+{profBonus}</strong></span>
+                <span className="text-[10px] text-slate-400 ml-1">Prof: <strong className="text-emerald-400">+{profBonus}</strong></span>
               </div>
             </div>
           </div>
 
           {/* Navigation Tabs */}
-          <div className="grim-tabs">
+          <div className="flex flex-wrap bg-slate-900 rounded-xl p-1 shadow-lg border border-slate-800 gap-1">
             {[
               { id: 'race', label: 'เผ่าพันธุ์', icon: <User className="w-4 h-4" /> },
               { id: 'class', label: `อาชีพ & Multiclass`, icon: <Swords className="w-4 h-4" /> },
@@ -1223,12 +1231,14 @@ export default function CharacterBuilder() {
               ...(hasAnySpellcasting ? [{ id: 'spells', label: 'สมุดเวท', icon: <Wand2 className="w-4 h-4" /> }] : []),
               { id: 'equip', label: 'อุปกรณ์ & สวมใส่', icon: <Backpack className="w-4 h-4" /> },
               { id: 'bio', label: 'ประวัติ & นิสัย', icon: <Feather className="w-4 h-4 text-amber-400" /> },
-              { id: 'combat', label: 'ต่อสู้ (Combat)', icon: <Flame className="w-4 h-4 text-grim-blood-light" /> }
+              { id: 'combat', label: 'ต่อสู้ (Combat)', icon: <Flame className="w-4 h-4 text-rose-400" /> }
             ].map(tab => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`grim-tab ${activeTab === tab.id ? 'is-active' : ''}`}
+                className={`flex-1 min-w-[100px] flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-lg font-medium text-xs transition-all ${
+                  activeTab === tab.id ? 'bg-amber-500 text-slate-950 shadow-md font-bold' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                }`}
               >
                 {tab.icon} <span>{tab.label}</span>
               </button>
@@ -1236,10 +1246,9 @@ export default function CharacterBuilder() {
           </div>
 
           {/* Main Tab Content Box (Modularized 9 Tabs) */}
-          <div className="grim-panel grim-ornate p-4 sm:p-6">
-            <div key={activeTab} className="grim-fade-in">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
             {activeTab === 'race' && (
-              <RaceTab
+              <RaceTab 
                 RACES={RACES}
                 selectedRace={selectedRace}
                 handleSelectRace={handleSelectRace}
@@ -1479,12 +1488,11 @@ export default function CharacterBuilder() {
                 setNewActDesc={setNewActDesc}
               />
             )}
-            </div>
           </div>
         </div>
 
         {/* RIGHT SIDEBAR: LIVE CHARACTER SHEET SUMMARY */}
-        <div className="lg:col-span-4 space-y-6 min-w-0">
+        <div className="lg:col-span-4 space-y-6">
           <SidebarSummary
             portraitUrl={portraitUrl}
             characterName={characterName}
@@ -1516,33 +1524,30 @@ export default function CharacterBuilder() {
 
       {/* FLOATING DICE ROLLER TOAST (Realtime Party Broadcast - History Stack) */}
       {rollHistory.length > 0 && (
-        <div className="fixed bottom-4 right-4 sm:bottom-5 sm:right-5 z-50 flex flex-col gap-2 w-[min(20rem,calc(100vw-2rem))] pointer-events-none print-hidden">
+        <div className="fixed bottom-5 right-5 z-50 flex flex-col gap-2 w-80 pointer-events-none print-hidden">
           {rollHistory.slice().reverse().map((roll, idx) => (
-            <div
-              key={roll.id + '-' + idx}
-              className={`grim-dice p-3 pointer-events-auto ${roll.isCrit ? 'grim-dice--crit' : roll.isFumble ? 'grim-dice--fumble' : ''}`}
-            >
+            <div key={roll.id + '-' + idx} className="bg-slate-900/95 border-2 border-amber-500 rounded-2xl p-3 shadow-2xl animate-in fade-in pointer-events-auto">
               <div className="flex items-center justify-between mb-1">
-                <span className="text-[11px] font-bold text-grim-gold flex items-center gap-1.5 leading-tight">
+                <span className="text-[11px] font-bold text-amber-400 flex items-center gap-1.5 leading-tight">
                   <Dice5 className="w-3.5 h-3.5 shrink-0" /> {roll.playerName ? `${roll.playerName}: ` : ''}{roll.label}
                 </span>
               </div>
-              <div className="flex items-baseline justify-between gap-2">
-                <div className="text-[11px] text-grim-muted">
+              <div className="flex items-baseline justify-between">
+                <div className="text-[11px] text-slate-400">
                   เต๋า: [{roll.rolls.join(', ')}] {roll.mod !== 0 ? (roll.mod > 0 ? `+ ${roll.mod}` : `- ${Math.abs(roll.mod)}`) : ''}
                   {roll.mode === 'adv' && ' (Adv)'}
                   {roll.mode === 'disadv' && ' (Dis)'}
                 </div>
-                <div className={`text-2xl font-black ${roll.isCrit ? 'text-amber-300' : roll.isFumble ? 'text-grim-blood-light' : 'text-grim-text'}`}>
+                <div className={`text-2xl font-black ${roll.isCrit ? 'text-amber-400' : roll.isFumble ? 'text-rose-400' : 'text-emerald-400'}`}>
                   {roll.total}
                 </div>
               </div>
               {roll.isCrit && <div className="text-[10px] font-bold text-amber-300 mt-0.5">🌟 CRITICAL HIT!</div>}
-              {roll.isFumble && <div className="text-[10px] font-bold text-grim-blood-light mt-0.5">💀 CRITICAL MISS!</div>}
+              {roll.isFumble && <div className="text-[10px] font-bold text-rose-400 mt-0.5">💀 CRITICAL MISS!</div>}
             </div>
           ))}
           <div className="flex justify-end pointer-events-auto mt-1">
-            <button onClick={() => setRollHistory([])} className="grim-btn grim-btn--sm">
+            <button onClick={() => setRollHistory([])} className="bg-slate-900/90 hover:bg-rose-500/30 text-slate-300 hover:text-rose-300 text-[10px] font-bold px-3 py-1.5 rounded-lg border border-slate-700 hover:border-rose-500/50 transition-all shadow-lg backdrop-blur-sm flex items-center gap-1">
               <Trash2 className="w-3 h-3" /> ล้างประวัติลูกเต๋า
             </button>
           </div>
@@ -1551,25 +1556,29 @@ export default function CharacterBuilder() {
 
       {/* CHARACTER MANAGER MODAL (Local & Supabase Cloud) */}
       {showCharModal && (
-        <div className="grim-overlay fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 print-hidden">
-          <div className="grim-panel grim-ornate grim-modal max-w-lg w-full max-h-[92vh] overflow-y-auto p-5 sm:p-6 space-y-4">
+        <div className="fixed inset-0 z-50 bg-black/75 flex items-center justify-center p-4 print-hidden">
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
             <div className="flex items-center justify-between">
-              <h3 className="grim-title text-lg font-bold flex items-center gap-2">
-                <FolderOpen className="w-5 h-5 text-grim-gold" /> จัดการตัวละครของฉัน
+              <h3 className="text-lg font-bold text-amber-400 flex items-center gap-2">
+                <FolderOpen className="w-5 h-5" /> จัดการตัวละครของฉัน
               </h3>
-              <button onClick={() => setShowCharModal(false)} className="grim-icon-btn" aria-label="ปิดหน้าต่าง">✕</button>
+              <button onClick={() => setShowCharModal(false)} className="text-slate-400 hover:text-white">✕</button>
             </div>
 
-            <div className="grim-inset flex gap-2 p-1.5">
+            <div className="flex gap-2 bg-slate-950 p-1.5 rounded-xl border border-slate-800">
               <button
                 onClick={() => setModalTab('local')}
-                className={`grim-subtab ${modalTab === 'local' ? 'is-active' : ''}`}
+                className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${
+                  modalTab === 'local' ? 'bg-emerald-600 text-white shadow' : 'text-slate-400 hover:text-white'
+                }`}
               >
                 💾 ในเครื่อง (Local: {savedCharacters.length})
               </button>
               <button
                 onClick={() => { setModalTab('cloud'); fetchCloudCharacters(); }}
-                className={`grim-subtab ${modalTab === 'cloud' ? 'is-active' : ''}`}
+                className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${
+                  modalTab === 'cloud' ? 'bg-sky-600 text-white shadow' : 'text-slate-400 hover:text-white'
+                }`}
               >
                 ☁️ บนคลาวด์ (Supabase: {cloudCharacters.length})
               </button>
@@ -1578,20 +1587,20 @@ export default function CharacterBuilder() {
             <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
               {modalTab === 'local' ? (
                 savedCharacters.length === 0 ? (
-                  <div className="grim-inset text-xs text-grim-muted text-center py-6">
+                  <div className="text-xs text-slate-400 text-center py-6 bg-slate-950 rounded-xl border border-slate-800">
                     ยังไม่มีตัวละครที่บันทึกไว้ในเครื่อง
                   </div>
                 ) : (
                   savedCharacters.map(ch => (
-                    <div key={ch.id} className="grim-item p-3 flex items-center justify-between gap-2">
-                      <div className="min-w-0">
-                        <div className="font-bold text-sm text-grim-text truncate">{ch.name}</div>
-                        <div className="text-xs text-grim-muted">บันทึกเมื่อ: {ch.updatedAt}</div>
+                    <div key={ch.id} className="bg-slate-950 border border-slate-800 rounded-xl p-3 flex items-center justify-between">
+                      <div>
+                        <div className="font-bold text-sm text-white">{ch.name}</div>
+                        <div className="text-xs text-slate-400">บันทึกเมื่อ: {ch.updatedAt}</div>
                       </div>
-                      <div className="flex items-center gap-2 shrink-0">
+                      <div className="flex items-center gap-2">
                         <button
                           onClick={() => handleLoadCharacter(ch)}
-                          className="grim-btn grim-btn--primary grim-btn--sm"
+                          className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-3 py-1.5 rounded-lg text-xs"
                         >
                           โหลด
                         </button>
@@ -1601,8 +1610,7 @@ export default function CharacterBuilder() {
                             setSavedCharacters(next);
                             localStorage.setItem('dnd_renji_saved_chars_v1', JSON.stringify(next));
                           }}
-                          className="grim-icon-btn grim-icon-btn--danger"
-                          aria-label="ลบตัวละคร"
+                          className="text-rose-400 hover:bg-rose-500/20 p-2 rounded-lg"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -1612,27 +1620,26 @@ export default function CharacterBuilder() {
                 )
               ) : (
                 cloudCharacters.length === 0 ? (
-                  <div className="grim-inset text-xs text-grim-muted text-center py-6">
+                  <div className="text-xs text-slate-400 text-center py-6 bg-slate-950 rounded-xl border border-sky-900/30">
                     ยังไม่มีตัวละครที่บันทึกไว้บน Cloud
                   </div>
                 ) : (
                   cloudCharacters.map(ch => (
-                    <div key={ch.id} className="grim-item p-3 flex items-center justify-between gap-2">
-                      <div className="min-w-0">
-                        <div className="font-bold text-sm text-grim-text truncate">{ch.name} <span className="text-xs text-grim-gold">(Lv.{ch.level || 1})</span></div>
-                        <div className="text-xs text-grim-muted">อัปเดต: {new Date(ch.updated_at).toLocaleString('th-TH')}</div>
+                    <div key={ch.id} className="bg-slate-950 border border-sky-800/50 rounded-xl p-3 flex items-center justify-between">
+                      <div>
+                        <div className="font-bold text-sm text-sky-100">{ch.name} <span className="text-xs text-amber-400">(Lv.{ch.level || 1})</span></div>
+                        <div className="text-xs text-slate-400">อัปเดต: {new Date(ch.updated_at).toLocaleString('th-TH')}</div>
                       </div>
-                      <div className="flex items-center gap-2 shrink-0">
+                      <div className="flex items-center gap-2">
                         <button
                           onClick={() => handleLoadCharacter(ch.sheet_data)}
-                          className="grim-btn grim-btn--primary grim-btn--sm"
+                          className="bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold px-3 py-1.5 rounded-lg text-xs"
                         >
                           โหลด
                         </button>
                         <button
                           onClick={() => handleDeleteCloud(ch.id)}
-                          className="grim-icon-btn grim-icon-btn--danger"
-                          aria-label="ลบตัวละครจาก Cloud"
+                          className="text-rose-400 hover:bg-rose-500/20 p-2 rounded-lg"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -1643,13 +1650,15 @@ export default function CharacterBuilder() {
               )}
             </div>
 
-            <div className="grim-divider !my-3" />
-            <div className="flex items-center justify-between gap-2">
-              <label className="grim-btn grim-btn--sm cursor-pointer">
-                <Upload className="w-4 h-4 text-grim-gold" /> อัปโหลดไฟล์ .JSON
+            <div className="pt-3 border-t border-slate-800 flex items-center justify-between">
+              <label className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-200 px-3.5 py-2 rounded-xl text-xs font-bold cursor-pointer">
+                <Upload className="w-4 h-4 text-emerald-400" /> อัปโหลดไฟล์ .JSON
                 <input type="file" accept=".json" onChange={handleImportJSON} className="hidden" />
               </label>
-              <button onClick={() => setShowCharModal(false)} className="grim-btn grim-btn--sm">
+              <button
+                onClick={() => setShowCharModal(false)}
+                className="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-xl text-xs font-bold"
+              >
                 ปิดหน้าต่าง
               </button>
             </div>
