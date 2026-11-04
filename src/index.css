@@ -1,1 +1,40 @@
 @import "tailwindcss";
+@theme {
+  /* Design tokens */
+  --color-grim-bg: #12100F;
+  --color-grim-bg2: #1C1916;
+  --color-grim-panel: #28221C;
+  --color-grim-parchment: #D6C19A;
+  --color-grim-gold: #B99A5B;
+  --color-grim-gold-dark: #80663A;
+  --color-grim-blood: #8B3030;
+  --color-grim-blood-light: #D98A8A;
+  --color-grim-muted: #A89B85;
+  --color-grim-text: #E8DDC7;
+
+  /* Remap slate -> น้ำตาลดำ */
+  --color-slate-50: #F6F0E2;
+  --color-slate-100: #EDE3CD;
+  --color-slate-200: #E8DDC7;
+  --color-slate-300: #CDBFA3;
+  --color-slate-400: #A89B85;
+  --color-slate-500: #82765F;
+  --color-slate-600: #5F5444;
+  --color-slate-700: #443A2E;
+  --color-slate-800: #28221C;
+  --color-slate-900: #1C1916;
+  --color-slate-950: #12100F;
+
+  /* Remap amber -> ทองโบราณ */
+  --color-amber-200: #E6D5AC;
+  --color-amber-300: #DCC48F;
+  --color-amber-400: #D0B173;
+  --color-amber-500: #B99A5B;
+  --color-amber-600: #9A7E47;
+  --color-amber-700: #80663A;
+  --color-amber-800: #5E4A2A;
+  --color-amber-900: #3D3019;
+
+  --font-heading: 'Cinzel', 'Sarabun', serif;
+  --font-body: 'Lora', 'Sarabun', serif;
+}

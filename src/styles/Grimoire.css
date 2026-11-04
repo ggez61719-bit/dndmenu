@@ -1,0 +1,489 @@
+/* ==========================================================================
+   grimoire.css — Dark Fantasy Medieval / Ancient Grimoire theme
+   วางที่ src/styles/grimoire.css แล้ว import ใน main.jsx (หลัง index.css)
+   ต้องอยู่ "บนสุด" ของไฟล์ที่ import ฟอนต์ (กฎของ @import)
+   ========================================================================== */
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Cinzel+Decorative:wght@700&family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Sarabun:wght@400;500;600;700&display=swap');
+
+/* ---------- Design tokens ---------- */
+:root {
+  --g-bg: #12100f;
+  --g-bg2: #1c1916;
+  --g-panel: #28221c;
+  --g-parch: #d6c19a;
+  --g-gold: #b99a5b;
+  --g-gold-d: #80663a;
+  --g-blood: #8b3030;
+  --g-muted: #a89b85;
+  --g-text: #e8ddc7;
+  --g-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --g-t: 200ms;
+  --g-font-head: 'Cinzel', 'Sarabun', serif;
+  --g-font-body: 'Lora', 'Sarabun', serif;
+}
+
+/* ---------- Root: พื้นหลัง + texture + vignette ---------- */
+.grim-root {
+  position: relative;
+  isolation: isolate;
+  overflow-x: clip;
+  font-family: var(--g-font-body);
+  color: var(--g-text);
+  background-color: var(--g-bg);
+  background-image:
+    radial-gradient(ellipse 80% 45% at 50% -8%, rgba(185, 154, 91, 0.1), transparent 70%),
+    linear-gradient(180deg, var(--g-bg2), var(--g-bg) 45%);
+  background-attachment: fixed;
+}
+.grim-root::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.65) 100%),
+    url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .84  0 0 0 0 .75  0 0 0 0 .6  0 0 0 .07 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+/* ---------- Global glue ภายในธีม ---------- */
+.grim-root h1,
+.grim-root h2,
+.grim-root h3 {
+  font-family: var(--g-font-head);
+  letter-spacing: 0.04em;
+}
+.grim-root ::selection {
+  background: rgba(185, 154, 91, 0.35);
+}
+.grim-root input,
+.grim-root select,
+.grim-root textarea,
+.grim-root button {
+  font-family: inherit;
+}
+.grim-root select option {
+  background: var(--g-bg2);
+  color: var(--g-text);
+}
+.grim-root :focus-visible {
+  outline: 2px solid var(--g-gold);
+  outline-offset: 2px;
+}
+.grim-root * {
+  scrollbar-width: thin;
+  scrollbar-color: var(--g-gold-d) var(--g-bg2);
+}
+.grim-root *::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.grim-root *::-webkit-scrollbar-track {
+  background: var(--g-bg2);
+}
+.grim-root *::-webkit-scrollbar-thumb {
+  background: var(--g-gold-d);
+  border-radius: 8px;
+}
+
+/* ---------- Typography helpers ---------- */
+.grim-title {
+  font-family: var(--g-font-head);
+  color: var(--g-parch);
+  letter-spacing: 0.06em;
+  text-shadow: 0 0 18px rgba(185, 154, 91, 0.35), 0 2px 0 rgba(0, 0, 0, 0.6);
+}
+.grim-label {
+  font-family: var(--g-font-head);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--g-gold);
+}
+
+/* ---------- Panel / Card ---------- */
+.grim-panel {
+  position: relative;
+  background: linear-gradient(180deg, rgba(40, 34, 28, 0.96), rgba(28, 25, 22, 0.96));
+  border: 1px solid rgba(128, 102, 58, 0.7);
+  border-radius: 0.75rem;
+  box-shadow:
+    0 10px 30px -12px rgba(0, 0, 0, 0.8),
+    inset 0 1px 0 rgba(214, 193, 154, 0.08),
+    inset 0 0 40px rgba(0, 0, 0, 0.35);
+}
+/* มุมประดับ 4 มุม (ใช้คู่กับ .grim-panel) */
+.grim-ornate::before {
+  content: '';
+  position: absolute;
+  inset: 5px;
+  pointer-events: none;
+  opacity: 0.75;
+  --c: var(--g-gold);
+  background:
+    linear-gradient(var(--c), var(--c)) top left / 14px 1px no-repeat,
+    linear-gradient(var(--c), var(--c)) top left / 1px 14px no-repeat,
+    linear-gradient(var(--c), var(--c)) top right / 14px 1px no-repeat,
+    linear-gradient(var(--c), var(--c)) top right / 1px 14px no-repeat,
+    linear-gradient(var(--c), var(--c)) bottom left / 14px 1px no-repeat,
+    linear-gradient(var(--c), var(--c)) bottom left / 1px 14px no-repeat,
+    linear-gradient(var(--c), var(--c)) bottom right / 14px 1px no-repeat,
+    linear-gradient(var(--c), var(--c)) bottom right / 1px 14px no-repeat;
+}
+.grim-inset {
+  background: rgba(18, 16, 15, 0.7);
+  border: 1px solid rgba(128, 102, 58, 0.55);
+  border-radius: 0.6rem;
+  box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.5);
+}
+.grim-item {
+  background: rgba(18, 16, 15, 0.75);
+  border: 1px solid rgba(128, 102, 58, 0.45);
+  border-radius: 0.6rem;
+  transition: border-color var(--g-t) var(--g-ease), transform var(--g-t) var(--g-ease),
+    box-shadow var(--g-t) var(--g-ease);
+}
+.grim-item:hover {
+  border-color: var(--g-gold);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5), 0 0 10px rgba(185, 154, 91, 0.15);
+}
+
+/* ---------- Divider ---------- */
+.grim-divider {
+  position: relative;
+  height: 1px;
+  margin: 1rem 0;
+  border: 0;
+  background: linear-gradient(90deg, transparent, var(--g-gold-d), var(--g-gold), var(--g-gold-d), transparent);
+}
+.grim-divider::after {
+  content: '◆';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  padding: 0 0.6rem;
+  font-size: 0.6rem;
+  line-height: 1;
+  color: var(--g-gold);
+  background: var(--g-bg);
+}
+
+/* ---------- Buttons ---------- */
+.grim-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 2.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--g-gold-d);
+  font-family: var(--g-font-head);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--g-text);
+  background: linear-gradient(180deg, #3a3026, #2a2219);
+  box-shadow: inset 0 1px 0 rgba(214, 193, 154, 0.15), 0 2px 6px rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+  transition: all var(--g-t) var(--g-ease);
+}
+.grim-btn:hover {
+  color: #fff;
+  border-color: var(--g-gold);
+  transform: translateY(-1px);
+  box-shadow: inset 0 1px 0 rgba(214, 193, 154, 0.2), 0 4px 10px rgba(0, 0, 0, 0.55),
+    0 0 14px rgba(185, 154, 91, 0.3);
+}
+.grim-btn:active {
+  transform: translateY(0);
+}
+.grim-btn--primary {
+  color: #1a1409;
+  border-color: #e0c98e;
+  background: linear-gradient(180deg, #d2b678, #a98a4c);
+}
+.grim-btn--primary:hover {
+  color: #120d05;
+  background: linear-gradient(180deg, #dcc386, #b99a5b);
+}
+.grim-btn--blood {
+  border-color: #a24848;
+  background: linear-gradient(180deg, #7a2a2a, #521c1c);
+}
+.grim-btn--sm {
+  min-height: 2.25rem;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.72rem;
+}
+.grim-btn-sq {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--g-gold-d);
+  font-weight: 700;
+  color: var(--g-parch);
+  background: linear-gradient(180deg, #3a3026, #2a2219);
+  cursor: pointer;
+  transition: all var(--g-t) var(--g-ease);
+}
+.grim-btn-sq:hover {
+  border-color: var(--g-gold);
+  box-shadow: 0 0 10px rgba(185, 154, 91, 0.3);
+}
+.grim-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 0.5rem;
+  color: var(--g-muted);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all var(--g-t) var(--g-ease);
+}
+.grim-icon-btn:hover {
+  color: var(--g-parch);
+  border-color: var(--g-gold-d);
+  background: rgba(185, 154, 91, 0.08);
+}
+.grim-icon-btn--danger:hover {
+  color: #d98a8a;
+  border-color: rgba(139, 48, 48, 0.8);
+  background: rgba(139, 48, 48, 0.2);
+}
+
+/* ---------- Inputs ---------- */
+.grim-input {
+  width: 100%;
+  padding: 0.6rem 0.9rem;
+  color: var(--g-text);
+  background: rgba(18, 16, 15, 0.8);
+  border: 1px solid rgba(128, 102, 58, 0.6);
+  border-bottom-width: 2px;
+  border-radius: 0.5rem;
+  transition: border-color var(--g-t) var(--g-ease), box-shadow var(--g-t) var(--g-ease);
+}
+.grim-input::placeholder {
+  color: rgba(168, 155, 133, 0.6);
+}
+.grim-input:focus {
+  outline: none;
+  border-color: var(--g-gold);
+  box-shadow: 0 0 0 3px rgba(185, 154, 91, 0.18);
+}
+.grim-select {
+  padding: 0.4rem 0.75rem;
+  min-height: 2.25rem;
+  font-weight: 800;
+  color: #1a1409;
+  background: linear-gradient(180deg, #d2b678, #a98a4c);
+  border: 1px solid #e0c98e;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+}
+
+/* ---------- Chips ---------- */
+.grim-chip {
+  padding: 0.2rem 0.5rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--g-muted);
+  background: rgba(18, 16, 15, 0.6);
+  border: 1px solid rgba(128, 102, 58, 0.5);
+  border-radius: 0.35rem;
+  cursor: pointer;
+  transition: all var(--g-t) var(--g-ease);
+}
+.grim-chip:hover {
+  color: var(--g-parch);
+  border-color: var(--g-gold);
+}
+.grim-chip.is-active {
+  color: #f0dfb4;
+  background: rgba(185, 154, 91, 0.25);
+  border-color: var(--g-gold);
+}
+@media (pointer: coarse) {
+  .grim-chip {
+    padding: 0.4rem 0.7rem;
+  }
+}
+
+/* ---------- Tabs (แท็บแบ่งบท) ---------- */
+.grim-tabs {
+  display: flex;
+  gap: 0.25rem;
+  padding: 0.35rem 0.35rem 0;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--g-gold-d);
+  scroll-snap-type: x proximity;
+}
+@media (min-width: 768px) {
+  .grim-tabs {
+    flex-wrap: wrap;
+    overflow-x: visible;
+  }
+}
+.grim-tab {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: 2.75rem;
+  padding: 0.5rem 0.9rem;
+  scroll-snap-align: start;
+  font-family: var(--g-font-head);
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--g-muted);
+  background: transparent;
+  border: 1px solid transparent;
+  border-bottom: none;
+  border-radius: 0.6rem 0.6rem 0 0;
+  cursor: pointer;
+  transition: all var(--g-t) var(--g-ease);
+}
+@media (min-width: 768px) {
+  .grim-tab {
+    flex: 1 1 auto;
+  }
+}
+.grim-tab:hover {
+  color: var(--g-parch);
+  background: rgba(185, 154, 91, 0.08);
+  border-color: rgba(128, 102, 58, 0.5);
+}
+.grim-tab.is-active {
+  color: #1a1409;
+  font-weight: 700;
+  background: linear-gradient(180deg, #d2b678, #b99a5b);
+  border-color: #e0c98e;
+  box-shadow: 0 -4px 14px rgba(185, 154, 91, 0.25);
+  margin-bottom: -1px;
+}
+.grim-tab.is-active svg {
+  color: inherit !important;
+}
+/* แท็บย่อยในหน้าต่าง Modal */
+.grim-subtab {
+  flex: 1;
+  min-height: 2.5rem;
+  padding: 0.4rem 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--g-muted);
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all var(--g-t) var(--g-ease);
+}
+.grim-subtab:hover {
+  color: var(--g-parch);
+}
+.grim-subtab.is-active {
+  color: #1a1409;
+  background: linear-gradient(180deg, #d2b678, #a98a4c);
+}
+
+/* ---------- Portrait frame ---------- */
+.grim-portrait {
+  position: relative;
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 5rem;
+  height: 5rem;
+  overflow: hidden;
+  cursor: pointer;
+  background: var(--g-bg);
+  border: 2px solid var(--g-gold);
+  border-radius: 0.6rem;
+  box-shadow: 0 0 0 3px var(--g-bg2), 0 0 0 4px var(--g-gold-d), 0 6px 16px rgba(0, 0, 0, 0.6);
+  transition: box-shadow var(--g-t) var(--g-ease), transform var(--g-t) var(--g-ease);
+}
+.grim-portrait:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 0 3px var(--g-bg2), 0 0 0 4px var(--g-gold), 0 0 18px rgba(185, 154, 91, 0.4);
+}
+
+/* ---------- Toast / Dice / Modal ---------- */
+.grim-toast {
+  color: var(--g-parch);
+  background: rgba(28, 25, 22, 0.97);
+  border: 1px solid var(--g-gold-d);
+  border-left: 3px solid var(--g-gold);
+  border-radius: 0.6rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+  animation: grim-rise 220ms var(--g-ease);
+}
+.grim-dice {
+  background: linear-gradient(180deg, rgba(40, 34, 28, 0.97), rgba(18, 16, 15, 0.97));
+  border: 1px solid var(--g-gold);
+  border-radius: 0.8rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7), 0 0 12px rgba(185, 154, 91, 0.2);
+  animation: grim-rise 250ms var(--g-ease);
+}
+.grim-dice--crit {
+  border-color: #e6cd8f;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7), 0 0 22px rgba(230, 205, 143, 0.45);
+}
+.grim-dice--fumble {
+  border-color: var(--g-blood);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7), 0 0 16px rgba(139, 48, 48, 0.45);
+}
+.grim-overlay {
+  animation: grim-fade 180ms ease-out;
+}
+.grim-modal {
+  animation: grim-pop 220ms var(--g-ease);
+}
+.grim-fade-in {
+  animation: grim-fade 220ms ease-out;
+}
+
+@keyframes grim-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes grim-rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes grim-pop {
+  from { opacity: 0; transform: translateY(8px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ---------- Accessibility & Print ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .grim-root *,
+  .grim-root *::before,
+  .grim-root *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+@media print {
+  .grim-root,
+  .grim-root::before {
+    background: #fff !important;
+  }
+  .grim-root {
+    color: #000 !important;
+  }
+  .grim-ornate::before {
+    display: none;
+  }
+}

@@ -8,7 +8,6 @@ import {
 } from 'lucide-react';
 
 import { supabase } from '../supabaseClient';
-import '../styles/fantasy-theme.css';
 import {
   STANDARD_ARRAY, RACES, BACKGROUNDS, CLASSES, FEATS_LIST,
   STATS_INFO, SKILLS_META, LANGUAGES_DB, FULL_CASTER_SLOTS,
@@ -121,6 +120,40 @@ export default function CharacterBuilder() {
   const [bardExpertise, setBardExpertise] = useState([]);
   const [druidWildShape, setDruidWildShape] = useState('');
   const [rogueExpertise, setRogueExpertise] = useState([]);
+  // Phase 1 Subclass States (Fighter, Barbarian, Monk)
+  const [battleMasterManeuvers, setBattleMasterManeuvers] = useState([]);
+  const [championExtraStyle, setChampionExtraStyle] = useState('');
+  const [wildheartBestialHeart, setWildheartBestialHeart] = useState('bear');
+  const [wildheartAnimalAspect, setWildheartAnimalAspect] = useState('aspect_bear');
+  const [wildheartSecondAspect, setWildheartSecondAspect] = useState('aspect_eagle');
+  const [monkElementsDisciplines, setMonkElementsDisciplines] = useState([]);
+  // Phase 2 Subclass States (Ranger, Rogue, Paladin)
+  const [hunterPreyChoice, setHunterPreyChoice] = useState('colossus_slayer');
+  const [hunterDefenseChoice, setHunterDefenseChoice] = useState('multiattack_def');
+  const [hunterMultiattackChoice, setHunterMultiattackChoice] = useState('volley');
+  const [beastMasterCompanion, setBeastMasterCompanion] = useState('ursa');
+  // Phase 3 Subclass States (Cleric, Druid, Bard)
+  const [landCircleTerrain, setLandCircleTerrain] = useState('grassland');
+  // Homebrew Custom Class State
+  const [homebrewConfig, setHomebrewConfig] = useState({
+    classNameTh: 'จอมเวทศาสตรา (Homebrew)',
+    classNameEn: 'Custom Class',
+    subclassNameTh: 'สายอาชีพย่อยพิเศษ (Custom Subclass)',
+    hitDie: 10,
+    skillChoices: 3,
+    casterType: 'none', // 'none', 'full', 'half', 'third', 'pact'
+    spellListSource: 'all', // 'all', 'wizard', 'cleric', 'druid', 'bard', 'warlock', 'paladin', 'ranger'
+    cantripsQuota: 3,
+    spellsQuota: 5,
+    unarmoredDefense: 'none', // 'none', 'con', 'wis', 'int', 'cha'
+    extraFeat6: false,
+    extraFeat10: false,
+    extraFeat14: false,
+    customFeatures: [
+      { id: 'hbf-1', level: 1, name: 'พลังต้นกำเนิด (Origin Awakening)', dice: '1d8', desc: 'สามารถกดปุ่มทอยลูกเต๋าหรือกดใช้ความสามารถพิเศษประจำตัวได้ทันที' },
+      { id: 'hbf-2', level: 5, name: 'Extra Attack / ยกระดับวิชาขั้นที่ 2', dice: '', desc: 'เมื่อถึงเลเวล 5 สามารถโจมตีได้ 2 ครั้งต่อเทิร์น หรือปลดล็อกขีดจำกัดพลังขั้นที่ 2' }
+    ]
+  });
   const [customResources, setCustomResources] = useState([
     { id: 'res-1', name: 'แต้มพิเศษประจำคลาส (Class Resource)', max: 3, current: 3, resetOn: 'short' }
   ]);
@@ -146,12 +179,38 @@ export default function CharacterBuilder() {
   const secondaryTotalLevels = multiclasses.reduce((sum, mc) => sum + (parseInt(mc.level) || 1), 0);
   const totalLevel = Math.min(20, level + secondaryTotalLevels);
 
+  const applyHomebrewOverrides = (cObj, scObj) => {
+    if (cObj.id !== 'homebrew') return { cls: cObj, subclass: scObj };
+    const hbClass = {
+      ...cObj,
+      name_th: homebrewConfig.classNameTh || 'คลาสพิเศษ (Homebrew)',
+      name_en: homebrewConfig.classNameEn || 'Homebrew',
+      hitDie: parseInt(homebrewConfig.hitDie, 10) || 10,
+      skillChoices: parseInt(homebrewConfig.skillChoices, 10) || 3,
+      spellcasting: homebrewConfig.casterType !== 'none' ? {
+        cantrips: parseInt(homebrewConfig.cantripsQuota, 10) || 3,
+        spells: parseInt(homebrewConfig.spellsQuota, 10) || 5,
+        cantripList: Object.keys(SPELLS_DB).filter(s => SPELLS_DB[s]?.level === 0 && (homebrewConfig.spellListSource === 'all' || SPELLS_DB[s]?.classes?.includes(homebrewConfig.spellListSource))),
+        spellList: Object.keys(SPELLS_DB).filter(s => (SPELLS_DB[s]?.level || 0) > 0 && (homebrewConfig.spellListSource === 'all' || SPELLS_DB[s]?.classes?.includes(homebrewConfig.spellListSource)))
+      } : null
+    };
+    const hbSubclass = {
+      ...(scObj || {}),
+      id: 'hb_sub_1',
+      name_th: homebrewConfig.subclassNameTh || 'สายอาชีพย่อย Homebrew',
+      desc: 'สายอาชีพย่อยปรับแต่งอิสระ (Custom Homebrew Subclass)'
+    };
+    return { cls: hbClass, subclass: hbSubclass };
+  };
+
+  const primaryResolved = applyHomebrewOverrides(selectedClass, selectedSubclass);
   const allCharacterClasses = [
-    { cls: selectedClass, level, subclass: selectedSubclass, isPrimary: true },
+    { cls: primaryResolved.cls, level, subclass: primaryResolved.subclass, isPrimary: true },
     ...multiclasses.map(mc => {
-      const cObj = CLASSES.find(c => c.id === mc.classId) || CLASSES[0];
-      const scObj = cObj.subclasses?.find(s => s.id === mc.subclassId) || cObj.subclasses?.[0] || null;
-      return { id: mc.id, cls: cObj, level: mc.level, subclass: scObj, isPrimary: false };
+      const rawCls = CLASSES.find(c => c.id === mc.classId) || CLASSES[0];
+      const rawSc = rawCls.subclasses?.find(s => s.id === mc.subclassId) || rawCls.subclasses?.[0] || null;
+      const resolved = applyHomebrewOverrides(rawCls, rawSc);
+      return { id: mc.id, cls: resolved.cls, level: mc.level, subclass: resolved.subclass, isPrimary: false };
     })
   ];
 
@@ -164,14 +223,48 @@ export default function CharacterBuilder() {
   // Proficiency Bonus by Total Character Level (Lv 1-20 D&D 5e Formula)
   const profBonus = Math.ceil(totalLevel / 4) + 1;
 
-  // Determine unlocked Feat / ASI tiers (Standard 4, 8, 12, 16, 19 + Fighter 6/14 + Rogue 10)
-  const baseFeatTiers = [4, 8, 12, 16, 19];
-  if (getClassLv('fighter') >= 6) baseFeatTiers.push(6);
-  if (getClassLv('fighter') >= 14) baseFeatTiers.push(14);
-  if (getClassLv('rogue') >= 10) baseFeatTiers.push(10);
-  const allPossibleFeatTiers = Array.from(new Set(baseFeatTiers)).sort((a, b) => a - b);
-  const unlockedTierLevels = allPossibleFeatTiers.filter(lv => totalLevel >= lv);
-  const hasFeatActive = (featId) => unlockedTierLevels.some(lv => asiTiers[lv]?.feat === featId);
+  // Determine unlocked Feat / ASI slots by individual Class Level (D&D 5e / BG3 Standard Rule)
+  // Standard classes unlock at Class Lv: 4, 8, 12, 16, 19
+  // Fighter unlocks extra at Class Lv: 6, 14 | Rogue unlocks extra at Class Lv: 10
+  const unlockedFeatSlots = [];
+  allCharacterClasses.forEach(cItem => {
+    const cid = cItem.cls.id;
+    const cLv = cItem.level;
+    const classTierList = [4, 8, 12, 16, 19];
+    if (cid === 'fighter') classTierList.push(6, 14);
+    if (cid === 'rogue') classTierList.push(10);
+    if (cid === 'homebrew') {
+      if (homebrewConfig.extraFeat6) classTierList.push(6);
+      if (homebrewConfig.extraFeat10) classTierList.push(10);
+      if (homebrewConfig.extraFeat14) classTierList.push(14);
+    }
+    classTierList.sort((a, b) => a - b);
+
+    classTierList.forEach(reqLv => {
+      if (cLv >= reqLv) {
+        const isExtraFighter = cid === 'fighter' && (reqLv === 6 || reqLv === 14);
+        const isExtraRogue = cid === 'rogue' && reqLv === 10;
+        unlockedFeatSlots.push({
+          key: `${cid}_${reqLv}`,
+          legacyLv: cItem.isPrimary ? reqLv : null,
+          classId: cid,
+          className: cItem.cls.name_th,
+          classLv: reqLv,
+          badgeText: isExtraFighter ? '(โบนัส Fighter)' : isExtraRogue ? '(โบนัส Rogue)' : '',
+          label: `${cItem.cls.name_th} Lv.${reqLv}`
+        });
+      }
+    });
+  });
+
+  const getFeatSlotChoice = (slot) => {
+    if (asiTiers[slot.key]) return asiTiers[slot.key];
+    if (slot.legacyLv && asiTiers[slot.legacyLv]) return asiTiers[slot.legacyLv];
+    return { feat: 'asi', stat: 'STR', stat2: 'STR' };
+  };
+
+  const unlockedTierLevels = unlockedFeatSlots.map(s => s.key);
+  const hasFeatActive = (featId) => unlockedFeatSlots.some(slot => getFeatSlotChoice(slot)?.feat === featId);
 
   // Multiclass Handlers
   const handleAddMulticlass = () => {
@@ -308,68 +401,130 @@ export default function CharacterBuilder() {
   }, [totalLevel, selectedClass.id]);
 
   // Combined Spellcasting Check
+  const activeEquippedItems = inventory.filter(i => i.equipped || i.attuned);
+  const hasItemSpellGrant = activeEquippedItems.some(i => 
+    (i.bonusSpellSlots && Object.values(i.bonusSpellSlots).some(v => v > 0)) ||
+    (Array.isArray(i.grantedSpells) && i.grantedSpells.length > 0)
+  );
+
   const hasAnySpellcasting = allCharacterClasses.some(c => 
     c.cls.spellcasting || 
     (c.cls.id === 'fighter' && c.level >= 3 && c.subclass?.id === 'eldritch_knight') ||
     (c.cls.id === 'rogue' && c.level >= 3 && c.subclass?.id === 'arcane_trickster')
-  ) || hasFeatActive('magic_initiate') || hasFeatActive('ritual_caster') || hasFeatActive('spell_sniper');
+  ) || hasFeatActive('magic_initiate') || hasFeatActive('ritual_caster') || hasFeatActive('spell_sniper') || hasItemSpellGrant;
 
-  // Update Spell Slots when Class, Multiclass or Level changes
+  // Update Spell Slots when Class, Multiclass or Level changes (D&D 5e / BG3 Standard Rules)
   useEffect(() => {
     if (!hasAnySpellcasting) {
       setSpellSlots({});
       return;
     }
 
-    let combinedCasterLv = 0;
-    allCharacterClasses.forEach(c => {
+    // Identify non-Warlock spellcasting classes (Full, Half, 1/3 Casters, and Homebrew)
+    const nonWarlockCasters = allCharacterClasses.filter(c => {
       const cid = c.cls.id;
-      if (['bard', 'cleric', 'druid', 'sorcerer', 'wizard'].includes(cid)) {
-        combinedCasterLv += c.level;
-      } else if (['paladin', 'ranger'].includes(cid)) {
-        combinedCasterLv += Math.floor(c.level / 2);
-      } else if (
-        (cid === 'fighter' && c.level >= 3 && c.subclass?.id === 'eldritch_knight') ||
-        (cid === 'rogue' && c.level >= 3 && c.subclass?.id === 'arcane_trickster')
-      ) {
-        combinedCasterLv += Math.ceil(c.level / 3);
+      if (['bard', 'cleric', 'druid', 'sorcerer', 'wizard'].includes(cid)) return true;
+      if (['paladin', 'ranger'].includes(cid) && c.level >= 2) return true;
+      if (cid === 'fighter' && c.level >= 3 && c.subclass?.id === 'eldritch_knight') return true;
+      if (cid === 'rogue' && c.level >= 3 && c.subclass?.id === 'arcane_trickster') return true;
+      if (cid === 'homebrew' && ['full', 'half', 'third'].includes(homebrewConfig.casterType)) {
+        if (homebrewConfig.casterType === 'half' && c.level < 2) return false;
+        return true;
       }
+      return false;
     });
 
+    const isMulticlassSpellcaster = nonWarlockCasters.length >= 2;
     const nextSlots = {};
-    if (multiclasses.length === 0 && (selectedClass.id === 'paladin' || selectedClass.id === 'ranger')) {
-      const table = HALF_CASTER_SLOTS[level] || {};
-      Object.entries(table).forEach(([sLv, maxCount]) => {
-        if (maxCount > 0) nextSlots[sLv] = { max: maxCount, current: maxCount };
+
+    if (nonWarlockCasters.length === 1 && !isMulticlassSpellcaster) {
+      // Single Spellcasting Class (even if multiclassed with non-caster like Barbarian/Monk/Fighter)
+      const sole = nonWarlockCasters[0];
+      const cid = sole.cls.id;
+      const cLv = sole.level;
+
+      if (['bard', 'cleric', 'druid', 'sorcerer', 'wizard'].includes(cid) || (cid === 'homebrew' && homebrewConfig.casterType === 'full')) {
+        const table = FULL_CASTER_SLOTS[cLv] || {};
+        Object.entries(table).forEach(([sLv, maxCount]) => {
+          if (maxCount > 0) nextSlots[sLv] = { max: maxCount, current: maxCount, regularMax: maxCount, pactMax: 0 };
+        });
+      } else if (['paladin', 'ranger'].includes(cid) || (cid === 'homebrew' && homebrewConfig.casterType === 'half')) {
+        const table = HALF_CASTER_SLOTS[cLv] || {};
+        Object.entries(table).forEach(([sLv, maxCount]) => {
+          if (maxCount > 0) nextSlots[sLv] = { max: maxCount, current: maxCount, regularMax: maxCount, pactMax: 0 };
+        });
+      } else if (cid === 'fighter' || cid === 'rogue' || (cid === 'homebrew' && homebrewConfig.casterType === 'third')) {
+        // Single-class 1/3 Caster (Eldritch Knight / Arcane Trickster) uses ceil(level / 3) on Full Caster Table
+        const effThirdLv = Math.ceil(cLv / 3);
+        const table = FULL_CASTER_SLOTS[effThirdLv] || {};
+        Object.entries(table).forEach(([sLv, maxCount]) => {
+          if (maxCount > 0) nextSlots[sLv] = { max: maxCount, current: maxCount, regularMax: maxCount, pactMax: 0 };
+        });
+      }
+    } else if (isMulticlassSpellcaster) {
+      // Multiclass Spellcaster Table (D&D 5e PHB p.164: Full = 1x, Half = floor(lv/2), Third = floor(lv/3))
+      let combinedCasterLv = 0;
+      nonWarlockCasters.forEach(c => {
+        const cid = c.cls.id;
+        if (['bard', 'cleric', 'druid', 'sorcerer', 'wizard'].includes(cid) || (cid === 'homebrew' && homebrewConfig.casterType === 'full')) {
+          combinedCasterLv += c.level;
+        } else if (['paladin', 'ranger'].includes(cid) || (cid === 'homebrew' && homebrewConfig.casterType === 'half')) {
+          combinedCasterLv += Math.floor(c.level / 2);
+        } else if (cid === 'fighter' || cid === 'rogue' || (cid === 'homebrew' && homebrewConfig.casterType === 'third')) {
+          combinedCasterLv += Math.floor(c.level / 3);
+        }
       });
-    } else if (combinedCasterLv > 0) {
-      const effLv = Math.min(20, combinedCasterLv);
+      const effLv = Math.min(20, Math.max(1, combinedCasterLv));
       const table = FULL_CASTER_SLOTS[effLv] || {};
       Object.entries(table).forEach(([sLv, maxCount]) => {
-        if (maxCount > 0) nextSlots[sLv] = { max: maxCount, current: maxCount };
+        if (maxCount > 0) nextSlots[sLv] = { max: maxCount, current: maxCount, regularMax: maxCount, pactMax: 0 };
       });
     } else if (hasFeatActive('magic_initiate') || hasFeatActive('ritual_caster')) {
-      nextSlots[1] = { max: 1, current: 1 };
+      nextSlots[1] = { max: 1, current: 1, regularMax: 1, pactMax: 0 };
     }
 
-    const warlockLv = getClassLv('warlock');
+    // Warlock Pact Magic & Mystic Arcanum (Tracked separately so Short Rest only restores Pact Slots!)
+    const warlockLv = getClassLv('warlock') + (homebrewConfig.casterType === 'pact' ? getClassLv('homebrew') : 0);
     if (warlockLv > 0) {
       const pactSlotLv = Math.min(5, Math.ceil(warlockLv / 2));
       const pactSlotCount = warlockLv >= 17 ? 4 : warlockLv >= 11 ? 3 : warlockLv >= 2 ? 2 : 1;
-      const existingMax = nextSlots[pactSlotLv]?.max || 0;
+      const existingRegMax = nextSlots[pactSlotLv]?.regularMax || 0;
+      const totalMax = existingRegMax + pactSlotCount;
       nextSlots[pactSlotLv] = {
-        max: existingMax + pactSlotCount,
-        current: existingMax + pactSlotCount,
+        max: totalMax,
+        current: totalMax,
+        regularMax: existingRegMax,
+        pactMax: pactSlotCount,
         isPact: true
       };
-      if (warlockLv >= 11 && !nextSlots[6]) nextSlots[6] = { max: 1, current: 1 };
-      if (warlockLv >= 13 && !nextSlots[7]) nextSlots[7] = { max: 1, current: 1 };
-      if (warlockLv >= 15 && !nextSlots[8]) nextSlots[8] = { max: 1, current: 1 };
-      if (warlockLv >= 17 && !nextSlots[9]) nextSlots[9] = { max: 1, current: 1 };
+      // Mystic Arcanum (1/Long Rest each at Lv.11, 13, 15, 17)
+      if (warlockLv >= 11 && !nextSlots[6]) nextSlots[6] = { max: 1, current: 1, regularMax: 1, pactMax: 0, isArcanum: true };
+      if (warlockLv >= 13 && !nextSlots[7]) nextSlots[7] = { max: 1, current: 1, regularMax: 1, pactMax: 0, isArcanum: true };
+      if (warlockLv >= 15 && !nextSlots[8]) nextSlots[8] = { max: 1, current: 1, regularMax: 1, pactMax: 0, isArcanum: true };
+      if (warlockLv >= 17 && !nextSlots[9]) nextSlots[9] = { max: 1, current: 1, regularMax: 1, pactMax: 0, isArcanum: true };
     }
 
+    // Apply Equipment Bonus Spell Slots (e.g. Pearl of Power, Spellcrux Amulet, Ring of Spell Storing)
+    inventory.filter(i => i.equipped || i.attuned).forEach(item => {
+      if (item.bonusSpellSlots) {
+        Object.entries(item.bonusSpellSlots).forEach(([sLv, addCount]) => {
+          const countNum = parseInt(addCount, 10) || 0;
+          if (countNum > 0) {
+            const existing = nextSlots[sLv] || { max: 0, current: 0, regularMax: 0, pactMax: 0, itemMax: 0 };
+            nextSlots[sLv] = {
+              ...existing,
+              max: existing.max + countNum,
+              current: existing.current + countNum,
+              regularMax: (existing.regularMax || 0) + countNum,
+              itemMax: (existing.itemMax || 0) + countNum
+            };
+          }
+        });
+      }
+    });
+
     setSpellSlots(nextSlots);
-  }, [selectedClass.id, level, multiclasses, asiTiers]);
+  }, [selectedClass.id, selectedSubclass?.id, level, multiclasses, asiTiers, inventory, homebrewConfig]);
 
   // Ensure no duplicate skills with Background
   useEffect(() => {
@@ -418,8 +573,8 @@ export default function CharacterBuilder() {
     let final = scores[statId];
     if (bonus2 === statId) final += 2;
     if (bonus1 === statId) final += 1;
-    unlockedTierLevels.forEach(tLv => {
-      const choice = asiTiers[tLv];
+    unlockedFeatSlots.forEach(slot => {
+      const choice = getFeatSlotChoice(slot);
       if (!choice) return;
       const featMeta = FEATS_LIST.find(f => f.id === choice.feat);
       if (choice.feat === 'asi') {
@@ -432,25 +587,75 @@ export default function CharacterBuilder() {
         if (chosenStat === statId) final += 1;
       }
     });
+
+    // Base Cap (20 standard, 24 for Lv.20 Barbarian STR/CON)
+    let cap = 20;
     if (getClassLv('barbarian') === 20 && (statId === 'STR' || statId === 'CON')) {
-      return Math.min(24, final + 4);
+      final += 4;
+      cap = 24;
     }
-    return Math.min(20, final);
+
+    // Apply Equipment Stat Bonuses (+1, +2, etc.)
+    let itemUncappedBonus = 0;
+    let highestOverride = 0;
+    activeEquippedItems.forEach(item => {
+      if (item.statBonuses && item.statBonuses[statId]) {
+        const bVal = parseInt(item.statBonuses[statId], 10) || 0;
+        if (item.uncappedStat) {
+          itemUncappedBonus += bVal;
+        } else {
+          final += bVal;
+        }
+      }
+      if (item.statOverrides && item.statOverrides[statId]) {
+        const oVal = parseInt(item.statOverrides[statId], 10) || 0;
+        if (oVal > highestOverride) highestOverride = oVal;
+      }
+    });
+
+    final = Math.min(cap, final) + itemUncappedBonus;
+    if (highestOverride > final) {
+      final = highestOverride;
+    }
+    return Math.min(30, final);
   };
 
   const getModifierNum = (score) => Math.floor((score - 10) / 2);
   const formatMod = (mod) => (mod >= 0 ? `+${mod}` : `${mod}`);
 
-  const isSkillProficient = (skillId) => selectedBg.proficiencies.includes(skillId) || selectedSkills.includes(skillId);
+  const hasWildheartAspect = (aspectId) => (
+    (allCharacterClasses.some(c => c.cls.id === 'barbarian' && c.level >= 6 && c.subclass?.id === 'wildheart') && wildheartAnimalAspect === aspectId) ||
+    (allCharacterClasses.some(c => c.cls.id === 'barbarian' && c.level >= 10 && c.subclass?.id === 'wildheart') && wildheartSecondAspect === aspectId)
+  );
+  const isChampion7 = allCharacterClasses.some(c => c.cls.id === 'fighter' && c.level >= 7 && c.subclass?.id === 'champion');
+  const isChampion15 = allCharacterClasses.some(c => c.cls.id === 'fighter' && c.level >= 15 && c.subclass?.id === 'champion');
+  const isChampion3 = allCharacterClasses.some(c => c.cls.id === 'fighter' && c.level >= 3 && c.subclass?.id === 'champion');
+  const critThreshold = isChampion15 ? 18 : (isChampion3 || hasFeatActive('spell_sniper')) ? 19 : 20;
+
+  const isSkillProficient = (skillId) => (
+    selectedBg.proficiencies.includes(skillId) ||
+    selectedSkills.includes(skillId) ||
+    ((skillId === 'deception' || skillId === 'persuasion') && warlockInvocations.includes('beguiling_influence')) ||
+    (skillId === 'survival' && hasWildheartAspect('aspect_tiger')) ||
+    (skillId === 'stealth' && hasWildheartAspect('aspect_wolf')) ||
+    activeEquippedItems.some(item => Array.isArray(item.skillProficiencies) && item.skillProficiencies.includes(skillId))
+  );
 
   const getSkillBonusNum = (skillId) => {
     const statId = SKILLS_META[skillId].stat;
     const baseMod = getModifierNum(getFinalScore(statId));
     const hasActorExp = hasFeatActive('actor') && (skillId === 'deception' || skillId === 'performance');
-    if (hasActorExp) return baseMod + profBonus * 2;
-    const isExp = bardExpertise.includes(skillId) || rogueExpertise.includes(skillId);
-    const prof = isSkillProficient(skillId) ? (isExp ? profBonus * 2 : profBonus) : (getClassLv('bard') >= 2 ? Math.floor(profBonus / 2) : 0);
-    return baseMod + prof;
+    const isExp = hasActorExp || bardExpertise.includes(skillId) || rogueExpertise.includes(skillId) || activeEquippedItems.some(item => Array.isArray(item.skillExpertise) && item.skillExpertise.includes(skillId));
+    const halfProfApplicable = getClassLv('bard') >= 2 || (isChampion7 && ['STR', 'DEX', 'CON'].includes(statId));
+    const prof = isExp ? profBonus * 2 : isSkillProficient(skillId) ? profBonus : (halfProfApplicable ? Math.ceil(profBonus / 2) : 0);
+    const isFeyWanderer = allCharacterClasses.some(c => c.cls.id === 'ranger' && c.level >= 3 && c.subclass?.id === 'fey_wanderer');
+    const feyBonus = (isFeyWanderer && statId === 'CHA') ? Math.max(0, getModifierNum(getFinalScore('WIS'))) : 0;
+    const itemSkillBonus = activeEquippedItems.reduce((sum, item) => {
+      const specific = parseInt(item.skillBonuses?.[skillId], 10) || 0;
+      const allSkills = parseInt(item.skillBonuses?.ALL, 10) || 0;
+      return sum + specific + allSkills;
+    }, 0);
+    return baseMod + prof + feyBonus + itemSkillBonus;
   };
 
   // Combat Calculations
@@ -465,25 +670,30 @@ export default function CharacterBuilder() {
   const isGloomStalker = allCharacterClasses.some(c => c.cls.id === 'ranger' && c.level >= 3 && c.subclass?.id === 'gloom_stalker');
   const hasFeralInstinct = getClassLv('barbarian') >= 7;
 
-  const hitDie = selectedClass.hitDie || 8;
+  const hitDie = (selectedClass.id === 'homebrew' ? parseInt(homebrewConfig.hitDie, 10) : selectedClass.hitDie) || 8;
   const avgPrimaryHitDie = Math.floor(hitDie / 2) + 1;
   const primaryHP = (hitDie + conMod) + (level - 1) * (avgPrimaryHitDie + conMod);
   const secondaryHP = multiclasses.reduce((sum, mc) => {
     const mcCls = CLASSES.find(c => c.id === mc.classId) || CLASSES[0];
-    const avgMcDie = Math.floor((mcCls.hitDie || 8) / 2) + 1;
+    const effMcDie = mc.classId === 'homebrew' ? (parseInt(homebrewConfig.hitDie, 10) || 10) : (mcCls.hitDie || 8);
+    const avgMcDie = Math.floor(effMcDie / 2) + 1;
     return sum + mc.level * (avgMcDie + conMod);
   }, 0);
-  const bonusFeatRaceHP = ((isGoldDwarf ? 1 : 0) + (hasToughFeat ? 2 : 0)) * totalLevel + sorcDraconicLv;
+  const itemFlatHPBonus = activeEquippedItems.reduce((sum, i) => sum + (parseInt(i.hpBonus, 10) || 0), 0);
+  const bonusFeatRaceHP = ((isGoldDwarf ? 1 : 0) + (hasToughFeat ? 2 : 0)) * totalLevel + sorcDraconicLv + itemFlatHPBonus;
   const maxHP = Math.max(totalLevel, primaryHP + secondaryHP + bonusFeatRaceHP);
 
-  const initModNum = dexMod + (hasAlertFeat ? 5 : 0) + (isGloomStalker ? 3 : 0) + (hasFeralInstinct ? 3 : 0);
+  const isSwashbuckler = allCharacterClasses.some(c => c.cls.id === 'rogue' && c.level >= 3 && c.subclass?.id === 'swashbuckler');
+  const chaMod = getModifierNum(getFinalScore('CHA'));
+  const itemInitBonus = activeEquippedItems.reduce((sum, i) => sum + (parseInt(i.initBonus, 10) || 0), 0);
+  const initModNum = dexMod + (hasAlertFeat ? 5 : 0) + (isGloomStalker ? 3 : 0) + (hasFeralInstinct ? 3 : 0) + (isSwashbuckler ? chaMod : 0) + itemInitBonus;
 
   // Equipped Armor, Shield & Attunement Calculations
   const equippedArmorItem = inventory.find(i => i.equipped && i.type === 'ชุดเกราะ' && !i.isShield && !i.name.toLowerCase().includes('shield') && !i.name.toLowerCase().includes('โล่'));
   const equippedShieldItem = inventory.find(i => i.equipped && (i.isShield || i.name.toLowerCase().includes('shield') || i.name.toLowerCase().includes('โล่')));
   const attunedCount = inventory.filter(i => i.attuned).length;
 
-  const hasDefenseStyle = Object.values(fightingStyles).includes('defense');
+  const hasDefenseStyle = Object.values(fightingStyles).includes('defense') || championExtraStyle === 'defense';
   const computeArmorAC = () => {
     let base = 10 + dexMod;
     const maxMedDex = hasFeatActive('medium_armour_master') ? 3 : 2;
@@ -495,8 +705,10 @@ export default function CharacterBuilder() {
       else base = acVal + dexMod;
     } else {
       const candidates = [10 + dexMod];
-      if (hasClass('barbarian')) candidates.push(10 + dexMod + conMod);
-      if (hasClass('monk') && !equippedShieldItem) candidates.push(10 + dexMod + wisMod);
+      if (hasClass('barbarian') || (hasClass('homebrew') && homebrewConfig.unarmoredDefense === 'con')) candidates.push(10 + dexMod + conMod);
+      if ((hasClass('monk') && !equippedShieldItem) || (hasClass('homebrew') && homebrewConfig.unarmoredDefense === 'wis')) candidates.push(10 + dexMod + wisMod);
+      if (hasClass('homebrew') && homebrewConfig.unarmoredDefense === 'int') candidates.push(10 + dexMod + getModifierNum(getFinalScore('INT')));
+      if (hasClass('homebrew') && homebrewConfig.unarmoredDefense === 'cha') candidates.push(10 + dexMod + chaMod);
       if (sorcDraconicLv > 0) candidates.push(13 + dexMod);
       base = Math.max(...candidates);
     }
@@ -517,12 +729,13 @@ export default function CharacterBuilder() {
   const monkLv = getClassLv('monk');
   const monkSpeedBonus = (monkLv >= 2 && !equippedArmorItem && !equippedShieldItem) ? (monkLv >= 18 ? 30 : monkLv >= 14 ? 25 : monkLv >= 10 ? 20 : monkLv >= 6 ? 15 : 10) : 0;
   const barbSpeedBonus = (getClassLv('barbarian') >= 5 && (!equippedArmorItem || equippedArmorItem.armorCat !== 'heavy')) ? 10 : 0;
-  const mobileFeatBonus = hasFeatActive('mobile') ? 10 : 0;
+  const mobileFeatBonus = (hasFeatActive('mobile') ? 10 : 0) + (hasWildheartAspect('aspect_elk') ? 5 : 0);
   const heavyArmorPenalty = (equippedArmorItem?.armorCat === 'heavy' && getFinalScore('STR') < 13) ? -10 : 0;
   
   const hasZeroSpeedCond = activeConditions.some(cId => CONDITIONS_LIST.find(c => c.id === cId)?.zeroSpeed);
   const hasDoubleSpeedCond = activeConditions.includes('hastened');
-  const finalSpeedNum = hasZeroSpeedCond ? 0 : Math.max(0, (baseSpeedNum + monkSpeedBonus + barbSpeedBonus + mobileFeatBonus + heavyArmorPenalty) * (hasDoubleSpeedCond ? 2 : 1));
+  const itemSpeedBonus = activeEquippedItems.reduce((sum, i) => sum + (parseInt(i.speedBonus, 10) || 0), 0);
+  const finalSpeedNum = hasZeroSpeedCond ? 0 : Math.max(0, (baseSpeedNum + monkSpeedBonus + barbSpeedBonus + mobileFeatBonus + heavyArmorPenalty + itemSpeedBonus) * (hasDoubleSpeedCond ? 2 : 1));
   const characterSpeed = `${finalSpeedNum} ฟุต`;
 
   // Sync currentHP when maxHP changes
@@ -564,7 +777,7 @@ export default function CharacterBuilder() {
       rolls = [r1, r2];
       const picked = modeToUse === 'adv' ? Math.max(r1, r2) : Math.min(r1, r2);
       chosenTotal = picked + mod;
-      isCrit = picked === 20;
+      isCrit = picked >= critThreshold;
       isFumble = picked === 1;
     } else {
       for (let i = 0; i < count; i++) {
@@ -573,7 +786,7 @@ export default function CharacterBuilder() {
       const sum = rolls.reduce((a, b) => a + b, 0);
       chosenTotal = sum + mod;
       if (count === 1 && sides === 20) {
-        isCrit = rolls[0] === 20;
+        isCrit = rolls[0] >= critThreshold;
         isFumble = rolls[0] === 1;
       }
     }
@@ -653,7 +866,13 @@ export default function CharacterBuilder() {
       setSpellSlots(prev => {
         const next = { ...prev };
         Object.keys(next).forEach(k => {
-          if (next[k].isPact) next[k] = { ...next[k], current: next[k].max };
+          const slot = next[k];
+          if (slot && slot.isPact && slot.pactMax > 0) {
+            next[k] = {
+              ...slot,
+              current: Math.min(slot.max, slot.current + slot.pactMax)
+            };
+          }
         });
         return next;
       });
@@ -711,6 +930,18 @@ export default function CharacterBuilder() {
     bardExpertise,
     druidWildShape,
     rogueExpertise,
+    battleMasterManeuvers,
+    championExtraStyle,
+    wildheartBestialHeart,
+    wildheartAnimalAspect,
+    wildheartSecondAspect,
+    monkElementsDisciplines,
+    hunterPreyChoice,
+    hunterDefenseChoice,
+    hunterMultiattackChoice,
+    beastMasterCompanion,
+    landCircleTerrain,
+    homebrewConfig,
     selectedSkills,
     selectedLanguages,
     selectedCantrips,
@@ -830,6 +1061,18 @@ export default function CharacterBuilder() {
     if (charObj.bardExpertise) setBardExpertise(charObj.bardExpertise);
     if (charObj.druidWildShape !== undefined) setDruidWildShape(charObj.druidWildShape);
     if (charObj.rogueExpertise) setRogueExpertise(charObj.rogueExpertise);
+    if (charObj.battleMasterManeuvers) setBattleMasterManeuvers(charObj.battleMasterManeuvers);
+    if (charObj.championExtraStyle !== undefined) setChampionExtraStyle(charObj.championExtraStyle);
+    if (charObj.wildheartBestialHeart) setWildheartBestialHeart(charObj.wildheartBestialHeart);
+    if (charObj.wildheartAnimalAspect) setWildheartAnimalAspect(charObj.wildheartAnimalAspect);
+    if (charObj.wildheartSecondAspect) setWildheartSecondAspect(charObj.wildheartSecondAspect);
+    if (charObj.monkElementsDisciplines) setMonkElementsDisciplines(charObj.monkElementsDisciplines);
+    if (charObj.hunterPreyChoice) setHunterPreyChoice(charObj.hunterPreyChoice);
+    if (charObj.hunterDefenseChoice) setHunterDefenseChoice(charObj.hunterDefenseChoice);
+    if (charObj.hunterMultiattackChoice) setHunterMultiattackChoice(charObj.hunterMultiattackChoice);
+    if (charObj.beastMasterCompanion) setBeastMasterCompanion(charObj.beastMasterCompanion);
+    if (charObj.landCircleTerrain) setLandCircleTerrain(charObj.landCircleTerrain);
+    if (charObj.homebrewConfig) setHomebrewConfig(charObj.homebrewConfig);
     if (charObj.selectedSkills) setSelectedSkills(charObj.selectedSkills);
     if (charObj.selectedLanguages) setSelectedLanguages(charObj.selectedLanguages);
     if (charObj.selectedCantrips) setSelectedCantrips(charObj.selectedCantrips);
@@ -904,7 +1147,8 @@ export default function CharacterBuilder() {
   };
 
   // Toggle Skills (Includes Skilled Feat +3 bonus skills)
-  const totalSkillQuota = selectedClass.skillChoices + (hasFeatActive('skilled') ? 3 : 0) + (selectedRace.id === 'human' ? 1 : 0);
+  const baseClsSkillQuota = selectedClass.id === 'homebrew' ? (parseInt(homebrewConfig.skillChoices, 10) || 3) : selectedClass.skillChoices;
+  const totalSkillQuota = baseClsSkillQuota + (hasFeatActive('skilled') ? 3 : 0) + (selectedRace.id === 'human' ? 1 : 0);
   const toggleSkill = (skillId) => {
     if (selectedSkills.includes(skillId)) {
       setSelectedSkills(selectedSkills.filter(s => s !== skillId));
@@ -915,6 +1159,10 @@ export default function CharacterBuilder() {
 
   // Combined Spell Lists for Multiclass, Eldritch Knight, Arcane Trickster, Magic Initiate & Ritual Caster
   const wizardClassObj = CLASSES.find(c => c.id === 'wizard');
+  const clericClassObj = CLASSES.find(c => c.id === 'cleric');
+  const clericCantrips = clericClassObj?.spellcasting?.cantripList || [];
+  const clericSpells = clericClassObj?.spellcasting?.spellList || [];
+  const hasDivineSoul = allCharacterClasses.some(c => c.cls.id === 'sorcerer' && c.level >= 1 && c.subclass?.id === 'divine_soul');
   const wizardCantrips = wizardClassObj?.spellcasting?.cantripList || [];
   const wizardSpells = wizardClassObj?.spellcasting?.spellList || [];
   const allRitualSpells = Object.keys(SPELLS_DB).filter(sName => SPELLS_DB[sName]?.ritual && SPELLS_DB[sName]?.level > 0);
@@ -922,7 +1170,49 @@ export default function CharacterBuilder() {
   const combinedCantripQuota = allCharacterClasses.reduce((sum, c) => sum + (c.cls.spellcasting?.cantrips || 0), 0) + (hasFeatActive('magic_initiate') ? 2 : 0) + (hasFeatActive('spell_sniper') ? 1 : 0);
   const maxPreparedSpells = allCharacterClasses.reduce((sum, c) => sum + (c.cls.spellcasting ? c.cls.spellcasting.spells + c.level : 0), 0) + (hasFeatActive('magic_initiate') ? 1 : 0) + (hasFeatActive('ritual_caster') ? 2 : 0);
 
+  const hasShadowMonk3 = allCharacterClasses.some(c => c.cls.id === 'monk' && c.level >= 3 && c.subclass?.id === 'shadow');
+  const hasArcaneTrickster3 = allCharacterClasses.some(c => c.cls.id === 'rogue' && c.level >= 3 && c.subclass?.id === 'arcane_trickster');
+
+  // Auto-prepared Subclass Spells (Oath Spells, Gloom Stalker Spells, Domain/Circle Spells)
+  const autoPreparedSpells = Array.from(new Set([
+    ...allCharacterClasses.flatMap(c => {
+      if (!c.subclass || c.level < (c.cls.subclassLevel || 1)) return [];
+      let spellMap = c.subclass.oathSpells || c.subclass.bonusSpells || c.subclass.domainSpells || c.subclass.expandedSpells || {};
+      if (c.subclass.id === 'land') {
+        spellMap = c.subclass.circleSpellsOptions?.[landCircleTerrain] || {};
+      }
+      return Object.entries(spellMap)
+        .filter(([reqLv]) => c.level >= parseInt(reqLv, 10))
+        .flatMap(([, sList]) => sList.filter(sName => SPELLS_DB[sName]));
+    }),
+    ...(warlockInvocations.includes('armor_shadows') ? ['Mage Armor'] : []),
+    ...(warlockInvocations.includes('fiendish_vigor') ? ['False Life'] : []),
+    ...(warlockInvocations.includes('mask_faces') ? ['Disguise Self'] : []),
+    ...(warlockInvocations.includes('misty_visions') ? ['Silent Image'] : []),
+    ...(warlockInvocations.includes('eldritch_sight') ? ['Detect Magic'] : []),
+    ...(warlockInvocations.includes('beast_speech') ? ['Speak with Animals'] : []),
+    ...(warlockInvocations.includes('thief_five_fates') ? ['Bane'] : []),
+    ...(warlockInvocations.includes('mire_mind') ? ['Slow'] : []),
+    ...(warlockInvocations.includes('sculptor_flesh') ? ['Polymorph'] : []),
+    ...(warlockInvocations.includes('ascendant_step') ? ['Levitate'] : []),
+    ...(warlockInvocations.includes('visions_distant_realm') ? ['Arcane Eye'] : []),
+    ...(warlockInvocations.includes('shroud_shadow') ? ['Invisibility'] : []),
+    ...(warlockInvocations.includes('chains_carceri') ? ['Hold Monster'] : []),
+    ...(allCharacterClasses.some(c => c.cls.id === 'wizard' && c.level >= 6 && c.subclass?.id === 'necromancy') ? ['Animate Dead'] : []),
+    ...(allCharacterClasses.some(c => c.cls.id === 'wizard' && c.level >= 10 && c.subclass?.id === 'transmutation') ? ['Polymorph'] : []),
+    ...activeEquippedItems.flatMap(i => Array.isArray(i.grantedSpells) ? i.grantedSpells.filter(s => SPELLS_DB[s]) : []),
+  ]));
+
   const combinedCantripOptions = Array.from(new Set([
+    ...(hasShadowMonk3 || allCharacterClasses.some(c => c.cls.id === 'wizard' && c.level >= 2 && c.subclass?.id === 'illusion') ? ['Minor Illusion'] : []),
+    ...(allCharacterClasses.some(c => c.cls.id === 'cleric' && c.level >= 1 && c.subclass?.id === 'light') ? ['Light'] : []),
+    ...(allCharacterClasses.some(c => c.cls.id === 'cleric' && c.level >= 1 && c.subclass?.id === 'nature') ? ['Shillelagh', 'Thorn Whip'] : []),
+    ...(allCharacterClasses.some(c => c.cls.id === 'warlock' && c.level >= 1 && c.subclass?.id === 'celestial_warlock') ? ['Light', 'Sacred Flame'] : []),
+    ...(allCharacterClasses.some(c => c.cls.id === 'druid' && c.level >= 2 && c.subclass?.id === 'stars') ? ['Guidance'] : []),
+    ...(allCharacterClasses.some(c => c.cls.id === 'barbarian' && c.level >= 3 && c.subclass?.id === 'giant_barb') ? ['Thaumaturgy'] : []),
+    ...(allCharacterClasses.some(c => c.cls.id === 'ranger' && c.level >= 3 && c.subclass?.id === 'swarmkeeper') ? ['Mage Hand'] : []),
+    ...(hasDivineSoul ? clericCantrips : []),
+    ...(hasArcaneTrickster3 ? ['Mage Hand'] : []),
     ...allCharacterClasses.flatMap(c => c.cls.spellcasting?.cantripList || (
       (c.cls.id === 'fighter' && c.subclass?.id === 'eldritch_knight') || (c.cls.id === 'rogue' && c.subclass?.id === 'arcane_trickster')
         ? wizardCantrips
@@ -931,14 +1221,55 @@ export default function CharacterBuilder() {
     ...(hasFeatActive('magic_initiate') || hasFeatActive('spell_sniper') ? wizardCantrips : [])
   ]));
 
+  const getClassMaxSpellLevel = (cItem) => {
+    const cid = cItem.cls.id;
+    const cLv = cItem.level;
+    if (['bard', 'cleric', 'druid', 'sorcerer', 'wizard'].includes(cid)) {
+      return Math.min(9, Math.ceil(cLv / 2));
+    }
+    if (['paladin', 'ranger'].includes(cid)) {
+      if (cLv < 2) return 0;
+      return Math.min(5, Math.ceil(cLv / 4));
+    }
+    if (cid === 'warlock') {
+      if (cLv >= 17) return 9;
+      if (cLv >= 15) return 8;
+      if (cLv >= 13) return 7;
+      if (cLv >= 11) return 6;
+      return Math.min(5, Math.ceil(cLv / 2));
+    }
+    if (
+      (cid === 'fighter' && cLv >= 3 && cItem.subclass?.id === 'eldritch_knight') ||
+      (cid === 'rogue' && cLv >= 3 && cItem.subclass?.id === 'arcane_trickster') ||
+      (cid === 'homebrew' && homebrewConfig.casterType === 'third')
+    ) {
+      return cLv >= 19 ? 4 : cLv >= 13 ? 3 : cLv >= 7 ? 2 : 1;
+    }
+    if (cid === 'homebrew') {
+      if (homebrewConfig.casterType === 'full' || homebrewConfig.casterType === 'pact') return Math.min(9, Math.ceil(cLv / 2));
+      if (homebrewConfig.casterType === 'half') return cLv < 2 ? 0 : Math.min(5, Math.ceil(cLv / 4));
+    }
+    return 0;
+  };
+
+  const sorcClassItem = allCharacterClasses.find(c => c.cls.id === 'sorcerer' && c.subclass?.id === 'divine_soul');
+  const divineSoulMaxLv = sorcClassItem ? getClassMaxSpellLevel(sorcClassItem) : 0;
+
   const combinedSpellOptions = Array.from(new Set([
-    ...allCharacterClasses.flatMap(c => c.cls.spellcasting?.spellList || (
-      (c.cls.id === 'fighter' && c.subclass?.id === 'eldritch_knight') || (c.cls.id === 'rogue' && c.subclass?.id === 'arcane_trickster')
-        ? wizardSpells
-        : []
-    )),
+    ...autoPreparedSpells,
+    ...(hasDivineSoul ? clericSpells.filter(sName => (SPELLS_DB[sName]?.level || 1) <= divineSoulMaxLv) : []),
+    ...allCharacterClasses.flatMap(c => {
+      const clsMaxSpellLv = getClassMaxSpellLevel(c);
+      if (clsMaxSpellLv <= 0) return [];
+      const rawList = c.cls.spellcasting?.spellList || (
+        (c.cls.id === 'fighter' && c.subclass?.id === 'eldritch_knight') || (c.cls.id === 'rogue' && c.subclass?.id === 'arcane_trickster')
+          ? wizardSpells
+          : []
+      );
+      return rawList.filter(sName => (SPELLS_DB[sName]?.level || 1) <= clsMaxSpellLv);
+    }),
     ...(hasFeatActive('magic_initiate') ? wizardSpells.filter(s => SPELLS_DB[s]?.level === 1) : []),
-    ...(hasFeatActive('ritual_caster') ? allRitualSpells : [])
+    ...(hasFeatActive('ritual_caster') ? allRitualSpells.filter(s => (SPELLS_DB[s]?.level || 1) <= Math.ceil(totalLevel / 2)) : [])
   ]));
 
   const maxSpellLevelUnlocked = Math.max(
@@ -965,16 +1296,18 @@ export default function CharacterBuilder() {
     ...autoLanguages.map(id => LANGUAGES_DB.find(l => l.id === id)?.name_th || id),
     ...selectedLanguages.slice(0, extraLanguageQuota).map(id => LANGUAGES_DB.find(l => l.id === id)?.name_th || id),
     ...allCharacterClasses.filter(c => c.cls.secretLanguage).map(c => c.cls.secretLanguage),
-    ...(getClassLv('monk') >= 13 ? ['พูดได้ทุกภาษา (Tongue of Sun & Moon)'] : [])
+    ...(getClassLv('monk') >= 13 ? ['พูดได้ทุกภาษา (Tongue of Sun & Moon)'] : []),
+    ...(warlockInvocations.includes('eyes_rune_keeper') ? ['อ่านภาษาเขียนได้ทุกภาษา (Eyes of the Rune Keeper)'] : [])
   ];
 
   // Inventory Carrying Capacity
   const totalWeight = inventory.reduce((sum, i) => sum + (parseFloat(i.weight) || 0) * (parseInt(i.qty, 10) || 1), 0);
-  const carryMultiplier = selectedRace.id === 'human' ? 18.75 : 15;
+  const carryMultiplier = (selectedRace.id === 'human' ? 18.75 : 15) * (hasWildheartAspect('aspect_bear') ? 2 : 1);
   const maxCarryWeight = Math.round(getFinalScore('STR') * carryMultiplier);
 
   return (
-<div className="fantasy-theme fantasy-bg min-h-screen text-slate-200 p-4 md:p-8 pb-28 selection:bg-amber-500/30 print:bg-white print:text-black print:p-0">      
+    <div className="min-h-screen bg-slate-950 text-slate-200 p-4 md:p-8 pb-28 font-sans selection:bg-amber-500/30 print:bg-white print:text-black print:p-0">
+      
       {/* Print Styles */}
       <style dangerouslySetInnerHTML={{__html: `
         @media print {
@@ -1184,6 +1517,34 @@ export default function CharacterBuilder() {
                 setDruidWildShape={setDruidWildShape}
                 rogueExpertise={rogueExpertise}
                 setRogueExpertise={setRogueExpertise}
+                battleMasterManeuvers={battleMasterManeuvers}
+                setBattleMasterManeuvers={setBattleMasterManeuvers}
+                championExtraStyle={championExtraStyle}
+                setChampionExtraStyle={setChampionExtraStyle}
+                wildheartBestialHeart={wildheartBestialHeart}
+                setWildheartBestialHeart={setWildheartBestialHeart}
+                wildheartAnimalAspect={wildheartAnimalAspect}
+                setWildheartAnimalAspect={setWildheartAnimalAspect}
+                wildheartSecondAspect={wildheartSecondAspect}
+                setWildheartSecondAspect={setWildheartSecondAspect}
+                monkElementsDisciplines={monkElementsDisciplines}
+                setMonkElementsDisciplines={setMonkElementsDisciplines}
+                hunterPreyChoice={hunterPreyChoice}
+                setHunterPreyChoice={setHunterPreyChoice}
+                hunterDefenseChoice={hunterDefenseChoice}
+                setHunterDefenseChoice={setHunterDefenseChoice}
+                hunterMultiattackChoice={hunterMultiattackChoice}
+                setHunterMultiattackChoice={setHunterMultiattackChoice}
+                beastMasterCompanion={beastMasterCompanion}
+                setBeastMasterCompanion={setBeastMasterCompanion}
+                landCircleTerrain={landCircleTerrain}
+                setLandCircleTerrain={setLandCircleTerrain}
+                homebrewConfig={homebrewConfig}
+                setHomebrewConfig={setHomebrewConfig}
+                profBonus={profBonus}
+                chaMod={getModifierNum(getFinalScore('CHA'))}
+                rollDiceFormula={rollDiceFormula}
+                setStatusMsg={setStatusMsg}
                 selectedSkills={selectedSkills}
                 selectedBg={selectedBg}
                 SKILLS_META={SKILLS_META}
@@ -1218,6 +1579,9 @@ export default function CharacterBuilder() {
                 formatMod={formatMod}
                 rollD20Check={rollD20Check}
                 unlockedTierLevels={unlockedTierLevels}
+                unlockedFeatSlots={unlockedFeatSlots}
+                getFeatSlotChoice={getFeatSlotChoice}
+                allCharacterClasses={allCharacterClasses}
                 totalLevel={totalLevel}
                 FEATS_LIST={FEATS_LIST}
                 featSearch={featSearch}
@@ -1261,6 +1625,7 @@ export default function CharacterBuilder() {
                 rollDiceFormula={rollDiceFormula}
                 combinedSpellOptions={combinedSpellOptions}
                 selectedSpells={selectedSpells}
+                autoPreparedSpells={autoPreparedSpells}
                 maxPreparedSpells={maxPreparedSpells}
                 setStatusMsg={setStatusMsg}
               />
@@ -1288,6 +1653,9 @@ export default function CharacterBuilder() {
                 inventory={inventory}
                 setInventory={setInventory}
                 setStatusMsg={setStatusMsg}
+                STATS_INFO={STATS_INFO}
+                SKILLS_META={SKILLS_META}
+                SPELLS_DB={SPELLS_DB}
               />
             )}
 
@@ -1384,6 +1752,9 @@ export default function CharacterBuilder() {
             formatMod={formatMod}
             profBonus={profBonus}
             unlockedTierLevels={unlockedTierLevels}
+                unlockedFeatSlots={unlockedFeatSlots}
+                getFeatSlotChoice={getFeatSlotChoice}
+                allCharacterClasses={allCharacterClasses}
             asiTiers={asiTiers}
             FEATS_LIST={FEATS_LIST}
             allKnownLanguages={allKnownLanguages}
