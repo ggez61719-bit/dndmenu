@@ -45,9 +45,13 @@ export default function CombatTab({
   newActDice,
   setNewActDice,
   newActDesc,
-  setNewActDesc
+  setNewActDesc,
+  WEAPON_MASTERIES_2024 = [],
+  weaponMasteries = [],
+  setStatusMsg
 }) {
-    const [newActAddProf, setNewActAddProf] = React.useState(true);
+    const [newActAddProf, setNewActAddProf] = React.useState(false);
+    const [quickFormula, setQuickFormula] = React.useState('1d20+dex+prof');
   return (
     <div className="animate-in fade-in space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -219,6 +223,50 @@ export default function CombatTab({
         </div>
       </div>
 
+      {/* ⚔️ Active Weapon Masteries (D&D 2024) Quick Trigger Bar */}
+      {weaponMasteries.length > 0 && WEAPON_MASTERIES_2024.length > 0 && (
+        <div className="bg-amber-950/25 border border-amber-500/40 rounded-xl p-4 space-y-2.5">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-amber-400 uppercase tracking-wider">
+              ⚔️ Weapon Mastery ที่เปิดใช้งานอยู่ (กฎ D&D 2024 — คลิกเพื่อประกาศผลลัพธ์เมื่อโจมตี)
+            </span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            {weaponMasteries.map(wmId => {
+              const wmObj = WEAPON_MASTERIES_2024.find(w => w.id === wmId);
+              if (!wmObj) return null;
+              return (
+                <div key={wmId} className="bg-slate-900/90 border border-slate-800 rounded-xl p-3 flex flex-col justify-between gap-2">
+                  <div>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs font-bold text-amber-300">{wmObj.name_th}</span>
+                      <span className="text-[10px] font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded">
+                        {wmObj.badge}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-300 mt-1 leading-relaxed">{wmObj.desc}</p>
+                  </div>
+                  <div className="flex items-center justify-between pt-1.5 border-t border-slate-800/80">
+                    <span className="text-[10px] text-slate-400 truncate max-w-[65%]">{wmObj.weapons}</span>
+                    <button
+                      onClick={() => {
+                        if (setStatusMsg) {
+                          setStatusMsg(`⚔️ แสดงผล Weapon Mastery [${wmObj.name_en}]: ${wmObj.desc}`);
+                          setTimeout(() => setStatusMsg(null), 4500);
+                        }
+                      }}
+                      className="bg-amber-500/20 hover:bg-amber-500/40 text-amber-200 border border-amber-500/40 px-2.5 py-1 rounded-lg text-[10px] font-bold shrink-0"
+                    >
+                      ⚡ แสดงผล {wmObj.name_en}
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       <div className="bg-slate-950/80 border border-slate-800 rounded-xl p-4 space-y-3">
         <div className="text-xs font-bold text-indigo-400 uppercase">ทรัพยากรประจำคลาส / Homebrew (Custom Resources)</div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -279,10 +327,43 @@ export default function CombatTab({
       </div>
 
       <div className="bg-slate-950/80 border border-slate-800 rounded-xl p-4 space-y-4">
-        <div className="flex flex-wrap items-center gap-3 bg-slate-900/50 p-3 rounded-xl border border-slate-800 mb-4">
-          <span className="text-xs font-bold text-amber-400 flex items-center gap-1"><Dice5 className="w-4 h-4"/> ทอยด่วน (Quick Roll):</span>
-          <button onClick={() => rollDiceFormula('ทอย d20', '1d20')} className="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-700 transition-all shadow">1d20 เพียวๆ</button>
-          <button onClick={() => rollDiceFormula('ทอยโจมตี + Prof', `1d20+${profBonus}`)} className="bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-400 px-3 py-1.5 rounded-lg text-xs font-bold border border-emerald-600/30 transition-all shadow">1d20 + Prof (+{profBonus})</button>
+        <div className="bg-slate-900/70 p-3.5 rounded-xl border border-slate-800 space-y-3 mb-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <span className="text-xs font-bold text-amber-400 flex items-center gap-1.5">
+              <Dice5 className="w-4 h-4" /> ทอยด่วน & สูตรเต๋าอิสระ (รองรับหลายเต๋า เช่น 1d6+1d4+2 และคีย์เวิร์ด +str, +dex, +con, +int, +wis, +cha, +prof)
+            </span>
+            <div className="flex flex-wrap items-center gap-1.5">
+              <button onClick={() => rollDiceFormula('ทอย d20', '1d20')} className="bg-slate-800 hover:bg-slate-700 text-slate-200 px-2.5 py-1 rounded-lg text-xs font-bold border border-slate-700 transition-all">1d20</button>
+              <button onClick={() => rollDiceFormula('ทอยโจมตี STR', '1d20+str+prof')} className="bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 px-2.5 py-1 rounded-lg text-xs font-bold border border-rose-500/30 transition-all">1d20+STR+Prof</button>
+              <button onClick={() => rollDiceFormula('ทอยโจมตี DEX', '1d20+dex+prof')} className="bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 px-2.5 py-1 rounded-lg text-xs font-bold border border-emerald-500/30 transition-all">1d20+DEX+Prof</button>
+              <button onClick={() => rollDiceFormula('ทอยโจมตีเวท INT', '1d20+int+prof')} className="bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 px-2.5 py-1 rounded-lg text-xs font-bold border border-sky-500/30 transition-all">1d20+INT+Prof</button>
+              <button onClick={() => rollDiceFormula('ทอยโจมตีเวท WIS', '1d20+wis+prof')} className="bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 px-2.5 py-1 rounded-lg text-xs font-bold border border-amber-500/30 transition-all">1d20+WIS+Prof</button>
+              <button onClick={() => rollDiceFormula('ทอยโจมตีเวท CHA', '1d20+cha+prof')} className="bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 px-2.5 py-1 rounded-lg text-xs font-bold border border-purple-500/30 transition-all">1d20+CHA+Prof</button>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2 pt-1">
+            <input
+              type="text"
+              value={quickFormula}
+              onChange={(e) => setQuickFormula(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && quickFormula.trim()) {
+                  rollDiceFormula(`ทอยสูตรอิสระ`, quickFormula.trim());
+                }
+              }}
+              placeholder="พิมพ์สูตรเต๋าอิสระ เช่น 1d20+dex+prof หรือ 2d6+1d4+str แล้วกด Enter..."
+              className="flex-1 min-w-[220px] bg-slate-950 border border-slate-700 focus:border-amber-500 rounded-xl px-3 py-2 text-xs font-bold text-amber-300 outline-none"
+            />
+            <button
+              onClick={() => {
+                if (quickFormula.trim()) rollDiceFormula(`ทอยสูตรอิสระ`, quickFormula.trim());
+              }}
+              className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-4 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow transition-all"
+            >
+              <Dice5 className="w-4 h-4" /> ทอยทันที
+            </button>
+          </div>
         </div>
         <div className="flex gap-2">
           {[
@@ -338,13 +419,27 @@ export default function CombatTab({
             placeholder="ชื่อท่าโจมตี / สกิล..."
             className="sm:col-span-4 bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white"
           />
-          <input
-            type="text"
-            value={newActDice}
-            onChange={(e) => setNewActDice(e.target.value)}
-            placeholder="ลูกเต๋า เช่น 1d20+6 หรือ 2d6+4"
-            className="sm:col-span-3 bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-amber-300 font-bold"
-          />
+          <div className="sm:col-span-3 flex flex-col gap-1">
+            <input
+              type="text"
+              value={newActDice}
+              onChange={(e) => setNewActDice(e.target.value)}
+              placeholder="เช่น 1d20+dex+prof หรือ 1d8+1d6+str"
+              className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-amber-300 font-bold outline-none"
+            />
+            <div className="flex flex-wrap gap-1">
+              {['+str', '+dex', '+con', '+int', '+wis', '+cha', '+prof', '+1d4', '+1d6'].map(tok => (
+                <button
+                  key={tok}
+                  type="button"
+                  onClick={() => setNewActDice(prev => `${prev || '1d20'}${tok}`)}
+                  className="text-[10px] bg-slate-900 hover:bg-slate-800 text-amber-300 border border-slate-700 px-1.5 py-0.5 rounded font-bold"
+                >
+                  {tok}
+                </button>
+              ))}
+            </div>
+          </div>
           <div className="sm:col-span-3 flex flex-col gap-1.5">
             <input
               type="text"

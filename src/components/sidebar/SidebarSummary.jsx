@@ -22,9 +22,12 @@ export default function SidebarSummary({
   rollD20Check,
   formatMod,
   profBonus,
-  unlockedTierLevels,
+  unlockedFeatSlots = [],
+  getFeatSlotChoice,
   asiTiers,
   FEATS_LIST,
+  WEAPON_MASTERIES_2024 = [],
+  weaponMasteries = [],
   allKnownLanguages
 }) {
   return (
@@ -106,16 +109,37 @@ export default function SidebarSummary({
         </div>
       </div>
 
-      {unlockedTierLevels.length > 0 && (
+      {unlockedFeatSlots.length > 0 && (
         <div className="space-y-1.5">
-          <div className="text-xs font-bold text-amber-400 uppercase">Feats & ASI ที่เลือกไว้</div>
+          <div className="text-xs font-bold text-amber-400 uppercase">Feats & ASI ที่เลือกไว้ ({unlockedFeatSlots.length})</div>
           <div className="flex flex-wrap gap-1.5">
-            {unlockedTierLevels.map(tLv => {
-              const ch = asiTiers[tLv];
+            {unlockedFeatSlots.map(slot => {
+              const ch = getFeatSlotChoice ? getFeatSlotChoice(slot) : asiTiers[slot.key];
               const fObj = FEATS_LIST.find(f => f.id === ch?.feat) || FEATS_LIST[0];
               return (
-                <span key={tLv} className="text-[11px] bg-indigo-500/15 text-indigo-300 border border-indigo-500/30 px-2 py-0.5 rounded-lg">
-                  Lv.{tLv}: {fObj.name.split(' (')[0]}
+                <span key={slot.key} className="text-[11px] bg-indigo-500/15 text-indigo-300 border border-indigo-500/30 px-2 py-0.5 rounded-lg">
+                  {slot.label}: {fObj.name.split(' (')[0]}
+                </span>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {weaponMasteries.length > 0 && WEAPON_MASTERIES_2024.length > 0 && (
+        <div className="space-y-1.5">
+          <div className="text-xs font-bold text-emerald-400 uppercase">Weapon Mastery 2024 ({weaponMasteries.length})</div>
+          <div className="flex flex-wrap gap-1.5">
+            {weaponMasteries.map(wmId => {
+              const wmObj = WEAPON_MASTERIES_2024.find(w => w.id === wmId);
+              if (!wmObj) return null;
+              return (
+                <span
+                  key={wmId}
+                  title={`${wmObj.weapons} — ${wmObj.desc}`}
+                  className="text-[11px] bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-lg font-semibold"
+                >
+                  ⚔️ {wmObj.name_en}: {wmObj.badge}
                 </span>
               );
             })}

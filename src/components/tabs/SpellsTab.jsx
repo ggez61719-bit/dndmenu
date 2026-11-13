@@ -13,6 +13,7 @@ export default function SpellsTab({
   rollDiceFormula,
   combinedSpellOptions,
   selectedSpells,
+  autoPreparedSpells = [],
   maxPreparedSpells,
   setStatusMsg
 }) {
@@ -76,7 +77,7 @@ export default function SpellsTab({
     .filter(sName => (SPELLS_DB[sName]?.level || 1) <= maxSpellLevelUnlocked)
     .filter(sName => {
       const meta = SPELLS_DB[sName] || { level: 1 };
-      if (levelFilter === 'picked' && !selectedSpells.includes(sName)) return false;
+      if (levelFilter === 'picked' && !selectedSpells.includes(sName) && !autoPreparedSpells.includes(sName)) return false;
       if (levelFilter === '0') return false;
       if (levelFilter !== 'all' && levelFilter !== 'picked' && String(meta.level) !== levelFilter) return false;
       return matchesSearch(sName, meta);
@@ -118,7 +119,7 @@ export default function SpellsTab({
           {Object.entries(spellSlots).map(([sLv, slotObj]) => (
             <div key={sLv} className="bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-center space-y-1.5">
               <div className="text-xs font-bold text-amber-400">
-                ระดับ {sLv} {slotObj.isPact ? '(Pact)' : ''}
+                ระดับ {sLv} {slotObj.isPact ? (slotObj.regularMax > 0 ? `(ปกติ ${slotObj.regularMax} + Pact ${slotObj.pactMax})` : `(Pact ${slotObj.pactMax})`) : slotObj.isArcanum ? '(Arcanum)' : ''}
               </div>
               <div className="flex items-center justify-center gap-1 flex-wrap">
                 {Array.from({ length: slotObj.max }).map((_, idx) => {
@@ -265,7 +266,8 @@ export default function SpellsTab({
                 level: 1, school: 'Evocation', action: '1 Action', range: '60 ฟุต',
                 components: 'V, S', duration: 'ทันที', desc: 'คาถาเวทมนตร์ประจำสายอาชีพ'
               };
-              const picked = selectedSpells.includes(sName);
+              const isAutoSub = autoPreparedSpells.includes(sName);
+              const picked = isAutoSub || selectedSpells.includes(sName);
               const sLv = meta.level || 1;
               const slotRemaining = spellSlots[sLv]?.current || 0;
 
@@ -282,7 +284,7 @@ export default function SpellsTab({
                         onClick={() => toggleSpell(sName, 'spell')}
                         className="font-bold text-slate-100 text-sm text-left flex-1 hover:text-indigo-300 transition-colors"
                       >
-                        {picked ? '✅ ' : '+ '} <span className="text-indigo-400">[Lv.{sLv}]</span> {sName}
+                        {isAutoSub ? '🌟 [เวทสายอาชีพ] ' : picked ? '✅ ' : '+ '} <span className="text-indigo-400">[Lv.{sLv}]</span> {sName}
                       </button>
                       <button
                         onClick={() => handleCastLeveledSpell(sName, meta)}

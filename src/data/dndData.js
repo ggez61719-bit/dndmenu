@@ -1959,6 +1959,40 @@ export const CLASSES = [
       }
     ],
     progression: { 1: ['Spellcasting', 'Arcane Recovery (ฟื้นช่องเวทเมื่อพักสั้น)'], 2: ['Arcane Tradition (สายอาชีพย่อย)'], 6: ['School Feature'], 10: ['Empowered Evocation / Improved Abjuration'], 18: ['Spell Mastery'] }
+  }  ,
+  {
+    id: 'homebrew',
+    name_en: 'Homebrew / Custom',
+    name_th: '✨ คลาสพิเศษ (Homebrew)',
+    hitDie: 10,
+    subclassLevel: 1,
+    skillChoices: 3,
+    isHomebrew: true,
+    skills: ['acrobatics', 'animal_handling', 'arcana', 'athletics', 'deception', 'history', 'insight', 'intimidation', 'investigation', 'medicine', 'nature', 'perception', 'performance', 'persuasion', 'religion', 'sleight_of_hand', 'stealth', 'survival'],
+    equipment: ['อาวุธประจำคลาส Homebrew (Custom Weapon)', 'ชุดเกราะประจำคลาส (Custom Armour)', 'ไอเทมพิเศษประจำตัว (Signature Item)'],
+    desc: 'คลาสอิสระสำหรับสาย Homebrew! กำหนดชื่อคลาส ลูกเต๋าเลือด (1d6-1d12) รูปแบบการร่ายเวท และสร้างความสามารถประจำคลาส/สายอาชีพย่อยได้เองตามจินตนาการ',
+    subclasses: [
+      {
+        id: 'hb_sub_1',
+        name_th: '🌟 สายอาชีพย่อย Homebrew (ปรับแต่งชื่อและสกิลได้เอง)',
+        desc: 'สามารถตั้งชื่อสายอาชีพย่อยและเพิ่มรายการความสามารถ (Features) ตามเลเวลได้เองในกล่องตั้งค่า Homebrew ด้านล่าง',
+        features: {
+          1: [
+            { name: 'ความสามารถเริ่มต้นของสาย Homebrew (Custom Origin)', desc: 'คุณสามารถเพิ่ม แก้ไข หรือลบความสามารถของคลาส Homebrew ได้ที่แผงปรับแต่งด้านล่าง' }
+          ]
+        }
+      }
+    ],
+    progression: {
+      1: ['ปลดล็อกคลาสและสายอาชีพย่อย Homebrew'],
+      4: ['Ability Score Improvement / Feat'],
+      5: ['ยกระดับพลังขั้นที่ 2 (Tier 2 Power)'],
+      8: ['Ability Score Improvement / Feat'],
+      12: ['Ability Score Improvement / Feat'],
+      16: ['Ability Score Improvement / Feat'],
+      19: ['Ability Score Improvement / Feat'],
+      20: ['พลังสูงสุดระดับตำนาน (Capstone Feature)']
+    }
   }
 ];
 
@@ -2320,4 +2354,71 @@ export const ALIGNMENTS_LIST = [
   { id: 'LE', name: 'Lawful Evil (อธรรมจอมบงการ)', desc: 'ใช้ระบบ กฎหมาย และลำดับชนชั้นเพื่อแสวงหาอำนาจให้ตนเอง' },
   { id: 'NE', name: 'Neutral Evil (อธรรมเห็นแก่ตัว)', desc: 'ทำทุกอย่างเพื่อผลประโยชน์ของตนเองโดยไม่สนวิธีการ' },
   { id: 'CE', name: 'Chaotic Evil (อธรรมบ้าคลั่ง)', desc: 'ชื่นชอบการทำลายล้าง ความโกลาหล และความรุนแรงไร้ขีดจำกัด' }
+];
+
+export const WEAPON_MASTERIES_2024 = [
+  {
+    id: 'cleave',
+    name_en: 'Cleave',
+    name_th: '🪓 Cleave (ฟันกวาดชิ่ง)',
+    weapons: 'Greataxe (ขวานยักษ์), Halberd (ง้าว)',
+    desc: 'เมื่อโจมตีประชิดโดนศัตรูตัวแรก คุณสามารถโจมตีแถมฟรีอีก 1 ครั้งใส่ศัตรูตัวที่สองที่อยู่ติดกับตัวแรกในระยะ 5 ฟุต และอยู่ในระยะอาวุธของคุณ! (ความเสียหายของหมัดแถมจะไม่บวกโบนัส Stat Modifier ยกเว้นติดลบ ใช้ได้เทิร์นละ 1 ครั้ง)',
+    badge: 'ตีชิ่งตัวที่ 2 ฟรี'
+  },
+  {
+    id: 'graze',
+    name_en: 'Graze',
+    name_th: '🗡️ Graze (เฉี่ยวคมดาบ การันตีดาเมจตอนตีพลาด!)',
+    weapons: 'Greatsword (ดาบใหญ่), Glaive (ทวนง้าว)',
+    desc: 'เมื่อคุณทอยโจมตีศัตรูพลาดเป้า (Miss) ศัตรูยังคงได้รับความเสียหายเท่ากับค่า Ability Modifier ที่คุณใช้ทอยโจมตีอาวุธชิ้นนั้นทันที! (เช่น หากมี STR +4 ต่อให้ทอยตีไม่โดน ศัตรูก็ยังโดนฟันเฉี่ยวเข้าเนื้อ 4 ดาเมจเสมอ!)',
+    badge: 'ตีพลาดยังทำดาเมจ = Stat Mod'
+  },
+  {
+    id: 'nick',
+    name_en: 'Nick',
+    name_th: '🔪 Nick (คมมีดฉับไว ตีอาวุธรองไม่เสีย Bonus Action!)',
+    weapons: 'Dagger (มีดสั้น), Light Hammer (ค้อนเบา), Sickle (เคียว), Scimitar (ดาบโค้ง)',
+    desc: 'เมื่อถืออาวุธเบาสองมือ (Two-Weapon Fighting) คุณสามารถฟันด้วยอาวุธมือรองควบเข้าไปใน Attack Action หลักได้เลยทันที โดยไม่ต้องเสีย Bonus Action! (ทำให้คุณเก็บ Bonus Action ไว้ใช้ทำอย่างอื่นในเทิร์นนั้นได้อิสระ ใช้ได้เทิร์นละ 1 ครั้ง)',
+    badge: 'ตีมือรองฟรีใน Action หลัก'
+  },
+  {
+    id: 'push',
+    name_en: 'Push',
+    name_th: '💨 Push (กระแทกปลิว 10 ฟุต ไม่ต้องทอย Save!)',
+    weapons: 'Greatclub (กระบองยักษ์), Pike (หอกยาว), Warhammer (ค้อนศึก), Heavy Crossbow (หน้าไม้หนัก)',
+    desc: 'เมื่อคุณโจมตีโดนศัตรูที่มีขนาดไม่เกิน Large คุณสามารถผลักกระแทกศัตรูตัวนั้นให้ปลิวถอยหลังออกไปจากคุณได้ไกลถึง 10 ฟุต ทันทีโดยที่ศัตรูไม่มีสิทธิ์ทอย Saving Throw ต้านทาน!',
+    badge: 'ผลักกระเด็น 10 ฟุต ทันที'
+  },
+  {
+    id: 'sap',
+    name_en: 'Sap',
+    name_th: '🛡️ Sap (สกัดกำลัง ศัตรูตีติด Disadvantage!)',
+    weapons: 'Mace (กระบอง), Spear (หอก), Flail (ลูกตุ้มโซ่), Longsword (ดาบยาว), Morningstar (กระบองหนาม), War Pick (ค้อนเจาะเกราะ)',
+    desc: 'เมื่อคุณโจมตีโดนศัตรู ศัตรูตัวนั้นจะเสียจังหวะและติดสถานะเสียเปรียบ (Disadvantage) ในการทอยโจมตีครั้งถัดไปของมันก่อนเริ่มเทิร์นหน้าของคุณทันที!',
+    badge: 'ศัตรูตีครั้งหน้าติด Disadv'
+  },
+  {
+    id: 'slow',
+    name_en: 'Slow',
+    name_th: '❄️ Slow (ชะลอฝีเท้า ลดความเร็วศัตรู -10 ฟุต)',
+    weapons: 'Club (กระบองสั้น), Javelin (แหลนซัด), Light Crossbow (หน้าไม้เบา), Sling (สลิง), Whip (แส้), Longbow (ธนูยาว), Musket (ปืนคาบศิลา)',
+    desc: 'เมื่อคุณโจมตีโดนศัตรูและทำความเสียหายได้ ความเร็วเคลื่อนที่ (Speed) ของศัตรูตัวนั้นจะถูกลดลง -10 ฟุต ไปจนถึงตอนเริ่มเทิร์นถัดไปของคุณ!',
+    badge: 'ลดความเร็วศัตรู -10 ฟุต'
+  },
+  {
+    id: 'topple',
+    name_en: 'Topple',
+    name_th: '🦵 Topple (กวาดล้มคว่ำติดสถานะ Prone!)',
+    weapons: 'Quarterstaff (พลอง), Battleaxe (ขวานศึก), Lance (ทวนอัศวิน), Maul (ค้อนยักษ์), Trident (ตรีศูล)',
+    desc: 'เมื่อคุณโจมตีโดนศัตรู คุณสามารถบังคับให้ศัตรูทอย Constitution Saving Throw (DC = 8 + Prof + Stat Mod ที่ใช้ตี) หากศัตรูทอยไม่ผ่านจะล้มคว่ำลงกับพื้นติดสถานะ Prone ทันที! (ทำให้เพื่อนรุมตีประชิดแบบ Advantage!)',
+    badge: 'ทอย CON Save ไม่ผ่านล้ม Prone'
+  },
+  {
+    id: 'vex',
+    name_en: 'Vex',
+    name_th: '🎯 Vex (จู่โจมปั่นป่วน หมัดต่อไปตีได้เปรียบ Advantage!)',
+    weapons: 'Handaxe (ขวานสั้น), Dart (ลูกดอก), Shortbow (ธนูสั้น), Rapier (ดาบเรเปียร์), Shortsword (ดาบสั้น), Blowgun, Hand Crossbow (หน้าไม้มือ), Pistol (ปืนพก)',
+    desc: 'เมื่อคุณโจมตีโดนศัตรูและทำความเสียหายได้ คุณจะได้รับความได้เปรียบ (Advantage) ในการทอยโจมตีครั้งถัดไปของคุณที่เล็งใส่ศัตรูตัวนั้นก่อนจบเทิร์นถัดไปของคุณทันที! (คอมโบกับ Sneak Attack ของ Rogue ได้ทุกเทิร์น!)',
+    badge: 'ตีครั้งถัดไปได้ Advantage!'
+  }
 ];

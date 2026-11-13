@@ -14,7 +14,9 @@ export default function StatsFeatsTab({
   getModifierNum,
   formatMod,
   rollD20Check,
-  unlockedTierLevels,
+  unlockedFeatSlots = [],
+  getFeatSlotChoice,
+  allCharacterClasses = [],
   totalLevel,
   FEATS_LIST,
   featSearch,
@@ -22,6 +24,8 @@ export default function StatsFeatsTab({
   asiTiers,
   setAsiTiers
 }) {
+  const classSummary = allCharacterClasses.map(c => `${c.cls.name_th} Lv.${c.level}`).join(' / ');
+
   return (
     <div className="animate-in fade-in space-y-6">
       <div>
@@ -95,10 +99,10 @@ export default function StatsFeatsTab({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <h3 className="text-lg font-bold text-amber-400 flex items-center gap-2">
-              <Sparkles className="w-5 h-5" /> ความสามารถพิเศษ & อัพสเตตัส (Feats — ครบ 37 แบบ)
+              <Sparkles className="w-5 h-5" /> ความสามารถพิเศษ & อัพสเตตัส (Feats — คิดตามเลเวลของแต่ละคลาส)
             </h3>
             <p className="text-xs text-slate-400">
-              ปลดล็อกที่ Lv.4, 8, 12, 16, 19 (Fighter ได้เพิ่มที่ Lv.6, 14 / Rogue ได้เพิ่มที่ Lv.10)
+              ปลดล็อกเมื่อ <strong>เลเวลของคลาสนั้นๆ (Class Level)</strong> ถึง Lv.4, 8, 12, 16, 19 (Fighter ได้เพิ่มที่ Lv.6, 14 / Rogue ได้เพิ่มที่ Lv.10)
             </p>
           </div>
           <input
@@ -110,14 +114,15 @@ export default function StatsFeatsTab({
           />
         </div>
 
-        {unlockedTierLevels.length === 0 ? (
-          <div className="text-xs text-amber-300/90 bg-amber-500/10 border border-amber-500/30 rounded-xl p-4">
-            💡 ตัวละครของคุณยังอยู่ <strong>Lv.{totalLevel}</strong> — ปรับเลเวลรวมเป็น <strong>Lv.4 ขึ้นไป</strong> ด้านบนเพื่อเริ่มเลือก Feats ทั้ง 37 แบบ!
+        {unlockedFeatSlots.length === 0 ? (
+          <div className="text-xs text-amber-300/90 bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 leading-relaxed">
+            💡 ปัจจุบันคุณคือ <strong>{classSummary}</strong> (เลเวลรวม Lv.{totalLevel}) — ตามกฎ D&D 5e / BG3 คุณต้องอัพเลเวลของ <strong>คลาสใดคลาสหนึ่งให้ถึง Lv.4 ขึ้นไป</strong> ก่อน จึงจะปลดล็อกช่องเลือก Feat ได้!
           </div>
         ) : (
           <div className="space-y-4">
-            {unlockedTierLevels.map(tLv => {
-              const currentChoice = asiTiers[tLv] || { feat: 'asi', stat: 'STR', stat2: 'STR' };
+            {unlockedFeatSlots.map((slot, sIdx) => {
+              const slotKey = slot.key;
+              const currentChoice = getFeatSlotChoice ? getFeatSlotChoice(slot) : (asiTiers[slotKey] || { feat: 'asi', stat: 'STR', stat2: 'STR' });
               const selectedFeatObj = FEATS_LIST.find(f => f.id === currentChoice.feat) || FEATS_LIST[0];
               const filteredFeats = FEATS_LIST.filter(f =>
                 f.id === currentChoice.feat ||
@@ -126,10 +131,10 @@ export default function StatsFeatsTab({
               );
 
               return (
-                <div key={tLv} className="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3">
+                <div key={slotKey} className="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <span className="text-xs font-black bg-amber-500 text-slate-950 px-2.5 py-1 rounded-lg">
-                      ช่อง Feat ที่ปลดล็อกตอน Lv.{tLv} {(tLv === 6 || tLv === 14) ? '(โบนัส Fighter)' : tLv === 10 ? '(โบนัส Rogue)' : ''}
+                      ช่อง Feat #{sIdx + 1} — ปลดล็อกจาก {slot.label} {slot.badgeText}
                     </span>
                     <span className="text-xs text-indigo-400 font-semibold">{selectedFeatObj.category}</span>
                   </div>
@@ -141,7 +146,7 @@ export default function StatsFeatsTab({
                       const defaultStat = newFeat.statOptions?.[0] || 'STR';
                       setAsiTiers(prev => ({
                         ...prev,
-                        [tLv]: { feat: e.target.value, stat: defaultStat, stat2: defaultStat }
+                        [slotKey]: { feat: e.target.value, stat: defaultStat, stat2: defaultStat }
                       }));
                     }}
                     className="w-full bg-slate-950 border border-slate-700 text-amber-300 font-bold text-sm rounded-xl px-3 py-2.5 outline-none"
@@ -163,7 +168,7 @@ export default function StatsFeatsTab({
                         <span className="text-xs text-slate-400">แต้มที่ 1 (+1):</span>
                         <select
                           value={currentChoice.stat || 'STR'}
-                          onChange={(e) => setAsiTiers(prev => ({ ...prev, [tLv]: { ...currentChoice, stat: e.target.value } }))}
+                          onChange={(e) => setAsiTiers(prev => ({ ...prev, [slotKey]: { ...currentChoice, stat: e.target.value } }))}
                           className="bg-slate-800 border border-slate-700 text-emerald-400 font-bold text-xs rounded-lg px-2.5 py-1.5"
                         >
                           {STATS_INFO.map(s => <option key={s.id} value={s.id}>{s.id} (+1)</option>)}
@@ -173,7 +178,7 @@ export default function StatsFeatsTab({
                         <span className="text-xs text-slate-400">แต้มที่ 2 (+1):</span>
                         <select
                           value={currentChoice.stat2 || currentChoice.stat || 'STR'}
-                          onChange={(e) => setAsiTiers(prev => ({ ...prev, [tLv]: { ...currentChoice, stat2: e.target.value } }))}
+                          onChange={(e) => setAsiTiers(prev => ({ ...prev, [slotKey]: { ...currentChoice, stat2: e.target.value } }))}
                           className="bg-slate-800 border border-slate-700 text-emerald-400 font-bold text-xs rounded-lg px-2.5 py-1.5"
                         >
                           {STATS_INFO.map(s => <option key={s.id} value={s.id}>{s.id} (+1)</option>)}
@@ -188,7 +193,7 @@ export default function StatsFeatsTab({
                       <span className="text-xs text-amber-300 font-semibold">เลือกค่าสถานะที่ได้รับโบนัส +1 จาก Feat นี้:</span>
                       <select
                         value={selectedFeatObj.statOptions?.includes(currentChoice.stat) ? currentChoice.stat : selectedFeatObj.statOptions?.[0]}
-                        onChange={(e) => setAsiTiers(prev => ({ ...prev, [tLv]: { ...currentChoice, stat: e.target.value } }))}
+                        onChange={(e) => setAsiTiers(prev => ({ ...prev, [slotKey]: { ...currentChoice, stat: e.target.value } }))}
                         className="bg-slate-800 border border-amber-500/40 text-amber-400 font-bold text-xs rounded-lg px-3 py-1.5"
                       >
                         {selectedFeatObj.statOptions?.map(st => (
